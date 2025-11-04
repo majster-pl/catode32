@@ -1,0 +1,97 @@
+"""
+input.py - Button input handling with debouncing
+"""
+
+from machine import Pin
+import time
+import config
+
+class InputHandler:
+    """Handles button inputs with debouncing and state tracking"""
+    
+    def __init__(self):
+        # Initialize all buttons with internal pull-ups
+        self.buttons = {
+            'up': Pin(config.BTN_UP, Pin.IN, Pin.PULL_UP),
+            'down': Pin(config.BTN_DOWN, Pin.IN, Pin.PULL_UP),
+            'left': Pin(config.BTN_LEFT, Pin.IN, Pin.PULL_UP),
+            'right': Pin(config.BTN_RIGHT, Pin.IN, Pin.PULL_UP),
+            'a': Pin(config.BTN_A, Pin.IN, Pin.PULL_UP),
+            'b': Pin(config.BTN_B, Pin.IN, Pin.PULL_UP),
+            'menu1': Pin(config.BTN_MENU1, Pin.IN, Pin.PULL_UP),
+            'menu2': Pin(config.BTN_MENU2, Pin.IN, Pin.PULL_UP)
+        }
+        
+        # Track button states for debouncing
+        self.button_states = {}
+        self.last_press_time = {}
+        self.debounce_time_ms = 50  # 50ms debounce
+        
+        # Initialize state tracking
+        for btn_name in self.buttons:
+            self.button_states[btn_name] = False
+            self.last_press_time[btn_name] = 0
+    
+    def is_pressed(self, button_name):
+        """
+        Check if a button is currently pressed (raw state, no debouncing)
+        Returns True if pressed, False otherwise
+        """
+        if button_name not in self.buttons:
+            return False
+        # Button is active low (0 = pressed)
+        return self.buttons[button_name].value() == 0
+    
+    def was_just_pressed(self, button_name):
+        """
+        Check if a button was just pressed (with debouncing)
+        Returns True only on the rising edge of a button press
+        """
+        if button_name not in self.buttons:
+            return False
+        
+        current_time = time.ticks_ms()
+        is_currently_pressed = self.is_pressed(button_name)
+        was_previously_pressed = self.button_states[button_name]
+        time_since_last = time.ticks_diff(current_time, self.last_press_time[button_name])
+        
+        # Button just pressed (wasn't pressed before, is pressed now)
+        if is_currently_pressed and not was_previously_pressed:
+            # Check debounce time
+            if time_since_last > self.debounce_time_ms:
+                self.button_states[button_name] = True
+                self.last_press_time[button_name] = current_time
+                return True
+        
+        # Button released
+        if not is_currently_pressed and was_previously_pressed:
+            self.button_states[button_name] = False
+        
+        return False
+    
+    def get_direction(self):
+        """
+        Get the current direction from D-pad buttons
+        Returns tuple (dx, dy) for movement delta
+        """
+        dx = 0
+        dy = 0
+        
+        if self.is_pressed('up'):
+            dy -= 1
+        if self.is_pressed('down'):
+            dy += 1
+        if self.is_pressed('left'):
+            dx -= 1
+        if self.is_pressed('right'):
+            dx += 1
+        
+        return (dx, dy)
+    
+    def any_button_pressed(self):
+        """Check if any button is currently pressed"""
+        return any(self.is_pressed(btn) for btn in self.buttons)
+    
+    def get_pressed_buttons(self):
+        """Get list of all currently pressed button names"""
+        return [name for name in self.buttons if self.is_pressed(name)]

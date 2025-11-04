@@ -1,0 +1,90 @@
+"""
+renderer.py - Display rendering logic
+"""
+
+from machine import Pin, I2C
+import ssd1306
+import config
+
+class Renderer:
+    """Handles all display rendering operations"""
+    
+    def __init__(self):
+        """Initialize display and rendering system"""
+        # Initialize I2C
+        self.i2c = I2C(0, scl=Pin(config.I2C_SCL), sda=Pin(config.I2C_SDA), 
+                      freq=config.I2C_FREQ)
+        
+        # Initialize OLED display
+        self.display = ssd1306.SSD1306_I2C(config.DISPLAY_WIDTH, 
+                                           config.DISPLAY_HEIGHT, 
+                                           self.i2c)
+        
+        # Clear display
+        self.clear()
+        self.show()
+    
+    def clear(self):
+        """Clear the display buffer"""
+        self.display.fill(0)
+    
+    def show(self):
+        """Update the physical display with buffer contents"""
+        self.display.show()
+    
+    def draw_character(self, character):
+        """
+        Draw a character on screen
+        For now, draws as a simple filled rectangle
+        """
+        x, y = character.get_position()
+        size = character.size
+        
+        # Draw filled rectangle for character
+        self.display.fill_rect(x, y, size, size, 1)
+        
+        # Optional: Draw a border to make it look more distinct
+        self.display.rect(x, y, size, size, 1)
+    
+    def draw_text(self, text, x, y):
+        """Draw text at given position"""
+        self.display.text(text, x, y)
+    
+    def draw_rect(self, x, y, width, height, filled=False):
+        """Draw a rectangle"""
+        if filled:
+            self.display.fill_rect(x, y, width, height, 1)
+        else:
+            self.display.rect(x, y, width, height, 1)
+    
+    def draw_line(self, x1, y1, x2, y2):
+        """Draw a line between two points"""
+        self.display.line(x1, y1, x2, y2, 1)
+    
+    def draw_pixel(self, x, y):
+        """Draw a single pixel"""
+        self.display.pixel(x, y, 1)
+    
+    def draw_ui_frame(self):
+        """Draw a UI frame around the screen (optional border)"""
+        self.display.rect(0, 0, config.DISPLAY_WIDTH, config.DISPLAY_HEIGHT, 1)
+    
+    def draw_fps(self, fps):
+        """Draw FPS counter in top-right corner"""
+        fps_text = f"{fps:.1f}"
+        # Clear small area for FPS
+        self.display.fill_rect(config.DISPLAY_WIDTH - 25, 0, 25, 8, 0)
+        self.display.text(fps_text, config.DISPLAY_WIDTH - 24, 0)
+    
+    def draw_debug_info(self, info_dict, start_y=0):
+        """
+        Draw debug information on screen
+        info_dict: dictionary of label->value pairs
+        """
+        y = start_y
+        for label, value in info_dict.items():
+            text = f"{label}:{value}"
+            self.display.text(text, 0, y)
+            y += 8
+            if y >= config.DISPLAY_HEIGHT:
+                break
