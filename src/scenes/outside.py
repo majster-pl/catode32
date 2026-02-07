@@ -1,7 +1,7 @@
 from scene import Scene
 from assets.character_renderer import CharacterRenderer
 from menu import Menu, MenuItem
-from assets.icons import TOY_ICONS
+from assets.icons import TOY_ICONS, SUN_ICON
 
 
 class OutsideScene(Scene):
@@ -10,7 +10,7 @@ class OutsideScene(Scene):
     def __init__(self, context, renderer, input):
         super().__init__(context, renderer, input)
         self.x = 64
-        self.y = 50
+        self.y = 61
         self.menu_active = False
 
     def load(self):
@@ -39,17 +39,14 @@ class OutsideScene(Scene):
 
         self.renderer.clear()
 
-        # Draw ground line to indicate "outside"
-        self.renderer.draw_line(0, 55, 128, 55)
-
         # Draw some simple grass tufts
         for x in [10, 35, 80, 110]:
-            self.renderer.draw_line(x, 55, x - 2, 52)
-            self.renderer.draw_line(x, 55, x, 51)
-            self.renderer.draw_line(x, 55, x + 2, 52)
+            self.renderer.draw_line(x, 64, x - 2, 60)
+            self.renderer.draw_line(x, 64, x, 60)
+            self.renderer.draw_line(x, 64, x + 2, 60)
 
         # Draw a simple sun in corner
-        self.renderer.draw_rect(110, 5, 10, 10, filled=True)
+        self.renderer.draw_sprite(SUN_ICON, 13, 13, 110, 5)
 
         self.character_renderer.draw_character(self.context.char, int(self.x), int(self.y))
 
