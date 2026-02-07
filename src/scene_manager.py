@@ -2,6 +2,8 @@
 
 import gc
 import time
+from menu import Menu, MenuItem
+
 
 class SceneManager:
     """Manages scene loading, unloading, and transitions"""
@@ -10,14 +12,23 @@ class SceneManager:
         self.context = context
         self.renderer = renderer
         self.input = input_handler
-        
+
         self.current_scene = None
         self.next_scene_class = None
-        
+
         # Track loaded scenes for memory management
         self.scene_cache = {}
         self.max_cached_scenes = 2  # Limit cached scenes for memory
+
+        # Big menu (menu1) - consistent across all scenes
+        self.big_menu = Menu(renderer, input_handler)
+        self.big_menu_active = False
+        self._scene_classes = {}  # Registered scene classes for menu navigation
         
+    def register_scene(self, name, scene_class):
+        """Register a scene class for menu navigation"""
+        self._scene_classes[name] = scene_class
+
     def change_scene(self, scene_class):
         self.next_scene_class = scene_class
         
@@ -75,16 +86,63 @@ class SceneManager:
     
     def draw(self):
         """Draw current scene"""
+        if self.big_menu_active:
+            self.big_menu.draw()
+            return
+
         if self.current_scene:
             self.current_scene.draw()
     
     def handle_input(self):
         """Handle input for current scene"""
-        
+        # Handle big menu input when active
+        if self.big_menu_active:
+            result = self.big_menu.handle_input()
+            if result == 'closed':
+                self.big_menu_active = False
+            elif result is not None:
+                self.big_menu_active = False
+                self._handle_big_menu_action(result)
+            return
+
+        # Open big menu on menu1 button
+        if self.input.was_just_pressed('menu1'):
+            self.big_menu_active = True
+            self.big_menu.open(self._build_big_menu_items())
+            return
+
         if self.current_scene:
             result = self.current_scene.handle_input()
             if result and result[0] == 'change_scene':
                 self.change_scene(result[1])
+
+    def _build_big_menu_items(self):
+        """Build the big menu items"""
+        items = []
+
+        # Location options
+        if 'normal' in self._scene_classes:
+            items.append(MenuItem("Go inside", action=('scene', 'normal')))
+        if 'outside' in self._scene_classes:
+            items.append(MenuItem("Go outside", action=('scene', 'outside')))
+
+        # Debug option
+        if 'debug' in self._scene_classes:
+            items.append(MenuItem("Debug", action=('scene', 'debug')))
+
+        return items
+
+    def _handle_big_menu_action(self, action):
+        """Handle big menu selection"""
+        if not action:
+            return
+
+        action_type = action[0]
+
+        if action_type == 'scene':
+            scene_name = action[1]
+            if scene_name in self._scene_classes:
+                self.change_scene(self._scene_classes[scene_name])
     
     def unload_all(self):
         """Unload all cached scenes - call this on shutdown"""
