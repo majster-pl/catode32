@@ -2,28 +2,71 @@
 
 A virtual pet game for ESP32 with MicroPython, featuring an SSD1306 OLED display and button controls.
 
-## Prerequisites
+## Setup
 
-- ESP32 flashed with MicroPython
+### Hardware Requirements
+
+- **ESP32-C6 SuperMini** development board
+- **SSD1306 OLED Display** (128x64, I2C)
+- **8 Push Buttons** for input
+
+### Software Requirements
+
 - `mpremote` installed (`pip install mpremote`)
+
+### Wiring
+
+**Display (I2C):**
+```
+Display → ESP32-C6
+VCC     → 3V3
+GND     → GND
+SDA     → GPIO4
+SCL     → GPIO7
+```
+
+**Buttons:**
+```
+Button   → GPIO Pin
+UP       → GPIO0
+DOWN     → GPIO1
+LEFT     → GPIO2
+RIGHT    → GPIO3
+A        → GPIO20
+B        → GPIO19
+MENU1    → GPIO18
+MENU2    → GPIO14
+```
+
+Each button connects between GPIO pin and GND (internal pull-ups enabled).
+
+## Installation
+
+### 1. Flash MicroPython (if not already done)
+
+```bash
+esptool.py --chip esp32c6 --port /dev/cu.usbmodem* erase_flash
+esptool.py --chip esp32c6 --port /dev/cu.usbmodem* write_flash -z 0x0 ESP32_GENERIC_C6-*.bin
+```
+
+### 2. Install SSD1306 Library
+
+```bash
+mpremote mip install ssd1306
+```
 
 ## Development Workflow
 
-For the fastest iteration during development, use `mpremote mount` to run code directly from your laptop without writing to flash:
+For the fastest iteration during development, use `mpremote mount` to run code directly from your computer without writing to ESP32's flash:
 
 ```bash
 mpremote mount src run src/main.py
 ```
 
-This mounts your local `src/` directory as the device's filesystem and executes `main.py`. All imports resolve from your laptop, so edits take effect immediately on the next run. Nothing is written to flash memory.
+This mounts your local `src/` directory as the device's filesystem and executes `main.py`. All imports resolve from your computer, so edits take effect immediately on the next run. Nothing is written to flash memory.
 
-To run a single script without mounting (useful for quick tests):
-
-```bash
-mpremote run src/main.py
-```
-
-Note: Any libraries the script imports (like `ssd1306`) must already be installed on the device.
+> [!NOTE]
+> Any libraries used (like `ssd1306`) must already be installed on the device.
 
 ## Scripts
 
