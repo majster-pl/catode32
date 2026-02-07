@@ -1,6 +1,7 @@
 from scene import Scene
 from assets.character_renderer import CharacterRenderer
 from menu import Menu, MenuItem
+from assets.icons import TOY_ICONS
 
 
 class OutsideScene(Scene):
@@ -90,9 +91,9 @@ class OutsideScene(Scene):
 
         # Build toys submenu - only outdoor-appropriate toys
         toy_items = [
-            MenuItem(toy, action=("toy", toy))
+            MenuItem(toy, icon=TOY_ICONS.get(toy), action=("toy", toy))
             for toy in self.context.inventory.get("toys", [])
-            if toy in ["feather", "laser"]  # Only some toys work outside
+            if toy in ["Feather", "Laser"]  # Only some toys work outside
         ]
         if toy_items:
             items.append(MenuItem("Play with toy", submenu=toy_items))

@@ -24,6 +24,6 @@ class GameContext:
 
         # Inventory for menu testing
         self.inventory = {
-            "toys": ["feather", "yarn ball", "laser"],
-            "snacks": ["treat", "kibble"],
+            "toys": ["Feather", "Yarn ball", "Laser"],
+            "snacks": ["Treat", "Kibble"],
         }

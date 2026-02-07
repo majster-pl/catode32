@@ -1,7 +1,7 @@
 from scene import Scene
 from assets.character_renderer import CharacterRenderer
 from menu import Menu, MenuItem
-from assets.icons import TOYS_ICON, HEART_ICON, HEART_BUBBLE_ICON, HAND_ICON, KIBBLE_ICON
+from assets.icons import TOYS_ICON, HEART_ICON, HEART_BUBBLE_ICON, HAND_ICON, KIBBLE_ICON, TOY_ICONS
 
 class NormalScene(Scene):
     def __init__(self, context, renderer, input):
@@ -90,7 +90,7 @@ class NormalScene(Scene):
 
         # Build toys submenu from inventory
         toy_items = [
-            MenuItem(toy, action=("toy", toy))
+            MenuItem(toy, icon=TOY_ICONS.get(toy), action=("toy", toy))
             for toy in self.context.inventory.get("toys", [])
         ]
         if toy_items:
