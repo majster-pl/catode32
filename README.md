@@ -16,27 +16,27 @@ A virtual pet game for ESP32 with MicroPython, featuring an SSD1306 OLED display
 
 ### Wiring
 
+This is the wiring I used for the project. If you change these, then you'll want to update the values in `src/config.py`
+
 **Display (I2C):**
-```
-Display → ESP32-C6
-VCC     → 3V3
-GND     → GND
-SDA     → GPIO4
-SCL     → GPIO7
-```
+|Display Pin | ESP32-C6 Pin |
+|--------|----------|
+|VCC | 3V3 |
+|GND | GND |
+|SDA | GPIO4 |
+|SCL | GPIO7 |
 
 **Buttons:**
-```
-Button   → GPIO Pin
-UP       → GPIO0
-DOWN     → GPIO1
-LEFT     → GPIO2
-RIGHT    → GPIO3
-A        → GPIO20
-B        → GPIO19
-MENU1    → GPIO18
-MENU2    → GPIO14
-```
+| Button | GPIO Pin |
+|--------|----------|
+| UP     | GPIO0    |
+| DOWN   | GPIO1    |
+| LEFT   | GPIO2    |
+| RIGHT  | GPIO3    |
+| A      | GPIO20   |
+| B      | GPIO19   |
+| MENU1  | GPIO18   |
+| MENU2  | GPIO14   |
 
 Each button connects between GPIO pin and GND (internal pull-ups enabled).
 
