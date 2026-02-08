@@ -4,6 +4,8 @@ class GameContext:
         self.char = {
             "blink": 0.0,
             "tail": 0.0,
+            "head": 0.0,
+            "body": 0.0,
         }
 
         self.fullness = 50 # Inverse of hunger

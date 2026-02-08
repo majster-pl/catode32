@@ -29,8 +29,7 @@ class OutsideScene(Scene):
         pass
 
     def update(self, dt):
-        self.context.char["blink"] = (self.context.char["blink"] + dt) % 10.0
-        self.context.char["tail"] = (self.context.char["tail"] + dt * 4) % 16.0
+        self.character_renderer.update_animation(self.context.char, dt)
 
     def draw(self):
         """Draw the scene"""
