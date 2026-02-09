@@ -4,6 +4,7 @@ from menu import Menu, MenuItem
 from assets.icons import TOYS_ICON, HEART_ICON, HEART_BUBBLE_ICON, HAND_ICON, KIBBLE_ICON, TOY_ICONS, SNACK_ICONS
 from assets.furniture import BOOKSHELF
 from assets.nature import PLANTER1, PLANT3
+from assets.items import FISH1
 
 class NormalScene(Scene):
     def __init__(self, context, renderer, input):
@@ -11,6 +12,7 @@ class NormalScene(Scene):
         self.say_meow = False
         self.menu_active = False
         self.character = None
+        self.fish_angle = 0
 
     def load(self):
         super().load()
@@ -28,7 +30,8 @@ class NormalScene(Scene):
     
     def update(self, dt):
         self.character.update(dt)
-    
+        self.fish_angle = (self.fish_angle + (dt * 25)) % 360
+
     def draw(self):
         """Draw the scene"""
         if self.menu_active:
@@ -46,6 +49,8 @@ class NormalScene(Scene):
 
         self.renderer.draw_sprite_obj(PLANTER1, 50, 63 - PLANTER1["height"])
         self.renderer.draw_sprite_obj(PLANT3, 51, 63 - PLANTER1["height"] - PLANT3["height"])
+
+        self.renderer.draw_sprite_obj(FISH1, 60, 20, rotate=self.fish_angle)
 
         self.renderer.show()
     
