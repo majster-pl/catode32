@@ -1,7 +1,7 @@
 from scene import Scene
 from assets.character_renderer import CharacterRenderer
 from menu import Menu, MenuItem
-from assets.icons import TOY_ICONS, SUN_ICON
+from assets.icons import TOYS_ICON, HEART_ICON, HEART_BUBBLE_ICON, HAND_ICON, KIBBLE_ICON, TOY_ICONS, SNACK_ICONS, SUN_ICON
 from assets.nature import PLANT1, PLANTER1, PLANT2, CLOUD1
 
 
@@ -10,10 +10,9 @@ class OutsideScene(Scene):
 
     def __init__(self, context, renderer, input):
         super().__init__(context, renderer, input)
-        self.x = 64
-        self.y = 60
         self.cloud_x = -10.0
         self.cloud_x2 = 30.0
+        self.cloud_x3 = -40.0
         self.menu_active = False
 
     def load(self):
@@ -32,12 +31,17 @@ class OutsideScene(Scene):
 
     def update(self, dt):
         self.character_renderer.update_animation(self.context.char, dt)
+        
         self.cloud_x += dt
         self.cloud_x2 += dt * 2.1
+        self.cloud_x3 += dt * 1.2
+
         if self.cloud_x > 128:
             self.cloud_x = -65
         if self.cloud_x2 > 128:
             self.cloud_x2 = -65
+        if self.cloud_x3 > 128:
+            self.cloud_x3 = -65
 
     def draw(self):
         """Draw the scene"""
@@ -56,12 +60,13 @@ class OutsideScene(Scene):
         # Draw a simple sun in corner
         self.renderer.draw_sprite(SUN_ICON, 13, 13, 110, 5)
         self.renderer.draw_sprite_obj(CLOUD1, int(self.cloud_x), 0)
+        self.renderer.draw_sprite_obj(CLOUD1, int(self.cloud_x3), -2)
         self.renderer.draw_sprite_obj(CLOUD1, int(self.cloud_x2), -11)
 
         self.renderer.draw_sprite_obj(PLANTER1, 10, 63 - PLANTER1["height"])
         self.renderer.draw_sprite_obj(PLANT1, 9, 63 - PLANTER1["height"] - PLANT1["height"])
 
-        self.character_renderer.draw_character(self.context.char, int(self.x), int(self.y))
+        self.character_renderer.draw_character(self.context.char, 64, 60)
 
         self.renderer.draw_sprite_obj(PLANTER1, 94, 63 - PLANTER1["height"])
         self.renderer.draw_sprite_obj(PLANT2, 90, 63 - PLANTER1["height"] - PLANT2["height"])
@@ -91,10 +96,10 @@ class OutsideScene(Scene):
     def _build_menu_items(self):
         """Build context-aware menu items for outside"""
         items = [
-            MenuItem("Give pets", action=("pets",)),
-            MenuItem("Point at bird", action=("point_bird",)),
-            MenuItem("Throw stick", action=("throw_stick",)),
-            MenuItem("Give treat", action=("treat",)),
+            MenuItem("Give pets", icon=HAND_ICON, action=("pets",)),
+            MenuItem("Point at bird", icon=HAND_ICON, action=("point_bird",)),
+            MenuItem("Throw stick", icon=HAND_ICON, action=("throw_stick",)),
+            MenuItem("Give treat", icon=KIBBLE_ICON, action=("treat",)),
         ]
 
         # Build toys submenu - only outdoor-appropriate toys
@@ -104,7 +109,7 @@ class OutsideScene(Scene):
             if toy in ["Feather", "Laser"]  # Only some toys work outside
         ]
         if toy_items:
-            items.append(MenuItem("Play with toy", submenu=toy_items))
+            items.append(MenuItem("Play with toy", icon=TOYS_ICON, submenu=toy_items))
 
         return items
 
