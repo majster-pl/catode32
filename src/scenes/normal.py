@@ -3,6 +3,7 @@ from assets.character_renderer import CharacterRenderer
 from menu import Menu, MenuItem
 from assets.icons import TOYS_ICON, HEART_ICON, HEART_BUBBLE_ICON, HAND_ICON, KIBBLE_ICON, TOY_ICONS, SNACK_ICONS
 from assets.furniture import BOOKSHELF
+from assets.nature import PLANTER1, PLANT3
 
 class NormalScene(Scene):
     def __init__(self, context, renderer, input):
@@ -43,6 +44,9 @@ class NormalScene(Scene):
             self.renderer.draw_text("Meow", self.x - 50, self.y - 30)
 
         self.character_renderer.draw_character(self.context.char, int(self.x), int(self.y))
+
+        self.renderer.draw_sprite_obj(PLANTER1, 50, 63 - PLANTER1["height"])
+        self.renderer.draw_sprite_obj(PLANT3, 51, 63 - PLANTER1["height"] - PLANT3["height"])
 
         self.renderer.show()
     

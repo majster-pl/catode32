@@ -2,7 +2,7 @@ from scene import Scene
 from assets.character_renderer import CharacterRenderer
 from menu import Menu, MenuItem
 from assets.icons import TOY_ICONS, SUN_ICON
-from assets.nature import PLANT1, PLANTER1
+from assets.nature import PLANT1, PLANTER1, PLANT2
 
 
 class OutsideScene(Scene):
@@ -52,6 +52,9 @@ class OutsideScene(Scene):
         self.renderer.draw_sprite_obj(PLANT1, 9, 63 - PLANTER1["height"] - PLANT1["height"])
 
         self.character_renderer.draw_character(self.context.char, int(self.x), int(self.y))
+
+        self.renderer.draw_sprite_obj(PLANTER1, 94, 63 - PLANTER1["height"])
+        self.renderer.draw_sprite_obj(PLANT2, 90, 63 - PLANTER1["height"] - PLANT2["height"])
 
         self.renderer.show()
 
