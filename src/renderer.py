@@ -106,7 +106,7 @@ class Renderer:
             if y >= config.DISPLAY_HEIGHT:
                 break
 
-    def draw_sprite(self, byte_array, width, height, x, y, transparent=True, invert=False):
+    def draw_sprite(self, byte_array, width, height, x, y, transparent=True, invert=False, transparent_color=0):
         """Draw a sprite at the given position
 
         Args:
@@ -115,8 +115,9 @@ class Renderer:
             height: sprite height in pixels
             x: x position on display
             y: y position on display
-            transparent: if True, black pixels (0) are transparent
+            transparent: if True, pixels matching transparent_color are transparent
             invert: if True, flip all pixel colors (white becomes black, etc.)
+            transparent_color: which color to treat as transparent (0=black, 1=white)
         """
 
         # Invert colors if requested
@@ -132,8 +133,8 @@ class Renderer:
         )
 
         if transparent:
-            # Draw with transparency - black pixels (0) are transparent
-            self.display.blit(sprite_fb, x, y, 0)
+            # Draw with transparency - pixels matching transparent_color are not drawn
+            self.display.blit(sprite_fb, x, y, transparent_color)
         else:
             # Draw without transparency (overwrites everything)
             self.display.blit(sprite_fb, x, y)
@@ -143,12 +144,26 @@ class Renderer:
 
         Args:
             sprite: dict with 'width', 'height', and 'frames' keys
+                    optionally includes 'fill_frames' for solid fill behind outline
             x: x position on display
             y: y position on display
             frame: which frame to draw (default 0)
             transparent: if True, black pixels (0) are transparent
             invert: if True, flip all pixel colors
         """
+        # If sprite has fill_frames, draw the fill first (in black)
+        # Invert so white fill becomes black, use white as transparent color
+        if "fill_frames" in sprite:
+            self.draw_sprite(
+                sprite["fill_frames"][frame],
+                sprite["width"],
+                sprite["height"],
+                x, y,
+                transparent=True,
+                invert=True,
+                transparent_color=1
+            )
+
         self.draw_sprite(
             sprite["frames"][frame],
             sprite["width"],

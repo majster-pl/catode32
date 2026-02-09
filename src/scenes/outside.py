@@ -2,7 +2,7 @@ from scene import Scene
 from assets.character_renderer import CharacterRenderer
 from menu import Menu, MenuItem
 from assets.icons import TOY_ICONS, SUN_ICON
-from assets.nature import PLANT1, PLANTER1, PLANT2
+from assets.nature import PLANT1, PLANTER1, PLANT2, CLOUD1
 
 
 class OutsideScene(Scene):
@@ -12,6 +12,8 @@ class OutsideScene(Scene):
         super().__init__(context, renderer, input)
         self.x = 64
         self.y = 60
+        self.cloud_x = -10.0
+        self.cloud_x2 = 30.0
         self.menu_active = False
 
     def load(self):
@@ -30,6 +32,12 @@ class OutsideScene(Scene):
 
     def update(self, dt):
         self.character_renderer.update_animation(self.context.char, dt)
+        self.cloud_x += dt
+        self.cloud_x2 += dt * 2.1
+        if self.cloud_x > 128:
+            self.cloud_x = -65
+        if self.cloud_x2 > 128:
+            self.cloud_x2 = -65
 
     def draw(self):
         """Draw the scene"""
@@ -47,6 +55,8 @@ class OutsideScene(Scene):
 
         # Draw a simple sun in corner
         self.renderer.draw_sprite(SUN_ICON, 13, 13, 110, 5)
+        self.renderer.draw_sprite_obj(CLOUD1, int(self.cloud_x), 0)
+        self.renderer.draw_sprite_obj(CLOUD1, int(self.cloud_x2), -11)
 
         self.renderer.draw_sprite_obj(PLANTER1, 10, 63 - PLANTER1["height"])
         self.renderer.draw_sprite_obj(PLANT1, 9, 63 - PLANTER1["height"] - PLANT1["height"])
