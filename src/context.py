@@ -1,14 +1,6 @@
 class GameContext:
     def __init__(self):
-
-        self.char = {
-            "eyes": 0.0,
-            "tail": 0.0,
-            "head": 0.0,
-            "body": 0.0,
-        }
-
-        self.fullness = 50 # Inverse of hunger
+        self.fullness = 50  # Inverse of hunger
         self.stimulation = 50
         self.energy = 50
         self.vigor = 50 # Inverse of exhaustion

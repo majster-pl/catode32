@@ -1,5 +1,5 @@
 from scene import Scene
-from assets.character_renderer import CharacterRenderer
+from entities.character import CharacterEntity
 from menu import Menu, MenuItem
 from assets.icons import TOYS_ICON, HEART_ICON, HEART_BUBBLE_ICON, HAND_ICON, KIBBLE_ICON, TOY_ICONS, SNACK_ICONS
 from assets.furniture import BOOKSHELF
@@ -8,14 +8,13 @@ from assets.nature import PLANTER1, PLANT3
 class NormalScene(Scene):
     def __init__(self, context, renderer, input):
         super().__init__(context, renderer, input)
-        self.x = 100
-        self.y = 60
         self.say_meow = False
         self.menu_active = False
-    
+        self.character = None
+
     def load(self):
         super().load()
-        self.character_renderer = CharacterRenderer(self.renderer)
+        self.character = CharacterEntity(100, 60)
         self.menu = Menu(self.renderer, self.input)
     
     def unload(self):
@@ -28,7 +27,7 @@ class NormalScene(Scene):
         pass
     
     def update(self, dt):
-        self.character_renderer.update_animation(self.context.char, dt)
+        self.character.update(dt)
     
     def draw(self):
         """Draw the scene"""
@@ -41,9 +40,9 @@ class NormalScene(Scene):
         self.renderer.draw_sprite_obj(BOOKSHELF, 0, 63-BOOKSHELF["height"])
 
         if self.say_meow:
-            self.renderer.draw_text("Meow", self.x - 50, self.y - 30)
+            self.renderer.draw_text("Meow", int(self.character.x) - 50, int(self.character.y) - 30)
 
-        self.character_renderer.draw_character(self.context.char, int(self.x), int(self.y))
+        self.character.draw(self.renderer)
 
         self.renderer.draw_sprite_obj(PLANTER1, 50, 63 - PLANTER1["height"])
         self.renderer.draw_sprite_obj(PLANT3, 51, 63 - PLANTER1["height"] - PLANT3["height"])
