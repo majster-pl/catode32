@@ -8,6 +8,7 @@ from scene_manager import SceneManager
 from scenes.normal import NormalScene
 from scenes.outside import OutsideScene
 from scenes.debug import DebugScene
+from scenes.stats import StatsScene
 
 class Game:
     def __init__(self):
@@ -28,6 +29,7 @@ class Game:
         # Register scenes for big menu navigation
         self.scene_manager.register_scene('normal', NormalScene)
         self.scene_manager.register_scene('outside', OutsideScene)
+        self.scene_manager.register_scene('stats', StatsScene)
         self.scene_manager.register_scene('debug', DebugScene)
 
         self.scene_manager.change_scene(NormalScene)

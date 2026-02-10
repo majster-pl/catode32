@@ -4,7 +4,7 @@ import gc
 import time
 import config
 from menu import Menu, MenuItem
-from assets.icons import WRENCH_ICON, SUN_ICON, HOUSE_ICON
+from assets.icons import WRENCH_ICON, SUN_ICON, HOUSE_ICON, STATS_ICON
 
 
 class SceneManager:
@@ -20,7 +20,7 @@ class SceneManager:
 
         # Track loaded scenes for memory management
         self.scene_cache = {}
-        self.max_cached_scenes = 2  # Limit cached scenes for memory
+        self.max_cached_scenes = 3  # Limit cached scenes for memory
 
         # Big menu (menu1) - consistent across all scenes
         self.big_menu = Menu(renderer, input_handler)
@@ -202,6 +202,10 @@ class SceneManager:
             items.append(MenuItem("Go inside", icon=HOUSE_ICON, action=('scene', 'normal')))
         if 'outside' in self._scene_classes:
             items.append(MenuItem("Go outside", icon=SUN_ICON, action=('scene', 'outside')))
+
+        # Stats page
+        if 'stats' in self._scene_classes:
+            items.append(MenuItem("Pet stats", icon=STATS_ICON, action=('scene', 'stats')))
 
         # Debug option
         if 'debug' in self._scene_classes:
