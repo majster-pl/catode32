@@ -21,3 +21,6 @@ class GameContext:
             "toys": ["Feather", "Yarn ball", "Laser"],
             "snacks": ["Treat", "Kibble"],
         }
+
+        # Minigame high scores
+        self.zoomies_high_score = 0

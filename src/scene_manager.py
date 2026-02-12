@@ -4,7 +4,7 @@ import gc
 import time
 import config
 from menu import Menu, MenuItem
-from assets.icons import WRENCH_ICON, SUN_ICON, HOUSE_ICON, STATS_ICON
+from assets.icons import WRENCH_ICON, SUN_ICON, HOUSE_ICON, STATS_ICON, MINIGAME_ICONS, MINIGAMES_ICON
 
 
 class SceneManager:
@@ -206,6 +206,13 @@ class SceneManager:
         # Stats page
         if 'stats' in self._scene_classes:
             items.append(MenuItem("Pet stats", icon=STATS_ICON, action=('scene', 'stats')))
+
+        # Minigames submenu
+        minigame_items = []
+        if 'zoomies' in self._scene_classes:
+            minigame_items.append(MenuItem("Zoomies", icon=MINIGAME_ICONS.get("Zoomies"), action=('scene', 'zoomies')))
+        if minigame_items:
+            items.append(MenuItem("Minigames", icon=MINIGAMES_ICON, submenu=minigame_items))
 
         # Debug option
         if 'debug' in self._scene_classes:
