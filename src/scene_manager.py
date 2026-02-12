@@ -20,6 +20,7 @@ class SceneManager:
 
         # Track loaded scenes for memory management
         self.scene_cache = {}
+        self.scene_access_order = []  # Track LRU order explicitly
         self.max_cached_scenes = 3  # Limit cached scenes for memory
 
         # Big menu (menu1) - consistent across all scenes
@@ -72,6 +73,9 @@ class SceneManager:
             # Reuse cached scene
             print(f"Reusing cached scene: {scene_name}")
             self.current_scene = self.scene_cache[scene_name]
+            # Move to end of access order (most recently used)
+            self.scene_access_order.remove(scene_name)
+            self.scene_access_order.append(scene_name)
         else:
             # Create new scene instance
             print(f"Creating new scene: {scene_name}")
@@ -80,8 +84,9 @@ class SceneManager:
             )
             self.current_scene.load()
 
-            # Add to cache
+            # Add to cache and access order
             self.scene_cache[scene_name] = self.current_scene
+            self.scene_access_order.append(scene_name)
 
             # Check cache size and clean if needed
             self._manage_cache()
@@ -91,14 +96,12 @@ class SceneManager:
         
     def _manage_cache(self):
         """Remove old scenes if cache is too large"""
-        if len(self.scene_cache) > self.max_cached_scenes:
-            # Find the oldest scene that isn't current
-            for scene_name, scene in list(self.scene_cache.items()):
-                if scene != self.current_scene:
-                    print(f"Unloading cached scene: {scene_name}")
-                    scene.unload()
-                    del self.scene_cache[scene_name]
-                    break
+        while len(self.scene_cache) > self.max_cached_scenes:
+            # Remove the least recently used scene (first in access order)
+            oldest_name = self.scene_access_order.pop(0)
+            print(f"Unloading cached scene: {oldest_name}")
+            self.scene_cache[oldest_name].unload()
+            del self.scene_cache[oldest_name]
     
     def update(self, dt):
         """Update current scene and transitions"""
@@ -238,3 +241,4 @@ class SceneManager:
             print(f"Unloading scene: {scene_name}")
             scene.unload()
         self.scene_cache.clear()
+        self.scene_access_order.clear()
