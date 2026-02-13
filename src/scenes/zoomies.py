@@ -21,7 +21,7 @@ class ZoomiesScene(Scene):
     BASE_SPEED = 48  # Starting speed (pixels per second)
     MAX_SPEED = 120  # Maximum speed
     SPEED_INCREASE_INTERVAL = 5  # Points between speed increases
-    SPAWN_MIN = 0.8  # Minimum seconds between obstacles
+    SPAWN_MIN = 1.2  # Minimum seconds between obstacles
     SPAWN_MAX = 3.0  # Maximum seconds between obstacles
     CLOUD_SPEED_RATIO = 0.2  # Cloud speed as ratio of ground speed
     BIRD_CHANCE = 0.2  # Chance to spawn a bird instead of ground obstacle
@@ -30,8 +30,9 @@ class ZoomiesScene(Scene):
 
     def __init__(self, context, renderer, input):
         super().__init__(context, renderer, input)
-        # Hit message popup - centered on screen
+        # Popups - centered on screen
         self.hit_popup = Popup(renderer, x=14, y=10, width=100, height=24)
+        self.start_popup = Popup(renderer, x=14, y=10, width=100, height=24)
         self.reset_game()
 
     def reset_game(self):
@@ -165,7 +166,10 @@ class ZoomiesScene(Scene):
         self.spawn_timer -= dt
         if self.spawn_timer <= 0:
             self._spawn_obstacle()
-            self.spawn_timer = random.uniform(self.SPAWN_MIN, self.SPAWN_MAX)
+            if self.current_speed < 80:
+                self.spawn_timer = random.uniform(self.SPAWN_MIN, self.SPAWN_MAX)
+            else:
+                self.spawn_timer = random.uniform(self.SPAWN_MIN * 0.6, self.SPAWN_MAX * 0.8)
 
         # Update ground decorations
         for decor in self.ground_decor:
@@ -215,7 +219,10 @@ class ZoomiesScene(Scene):
             })
         else:
             # Spawn a ground obstacle
-            sprite = random.choice([SMALLTREE1, PLANT1, PLANT2, PLANT6])
+            options = [SMALLTREE1, PLANT1, PLANT2]
+            if self.current_speed > 90:
+                options.append(PLANT6)
+            sprite = random.choice(options)
             self.obstacles.append({
                 "sprite": sprite,
                 "x": float(config.DISPLAY_WIDTH + 5),
@@ -294,9 +301,11 @@ class ZoomiesScene(Scene):
 
         # Draw start/game over message
         if not self.game_started:
-            self._draw_centered_text("Press A to start", 20)
             if self.context.zoomies_high_score > 0:
-                self._draw_centered_text(f"Best: {self.context.zoomies_high_score}", 32)
+                self.start_popup.set_text(f"A to start\nBest: {self.context.zoomies_high_score}", wrap=False, center=True)
+            else:
+                self.start_popup.set_text("Press A to start", center=True)
+            self.start_popup.draw(show_scroll_indicators=False)
         elif self.is_hit:
             if self.is_new_best:
                 self.hit_popup.set_text(f"NEW BEST!\n{self.score}", wrap=False, center=True)
