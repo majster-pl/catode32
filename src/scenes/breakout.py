@@ -1,6 +1,7 @@
 """
 Breakout scene - Brick breaker minigame
 """
+import random
 import config
 from scene import Scene
 from assets.minigame_character import CAT_AVATAR1
@@ -21,7 +22,11 @@ class BreakoutScene(Scene):
     PADDLE_WIDTH = 20
     PADDLE_HEIGHT = 2
     PADDLE_Y = 60  # Near bottom of screen
-    PADDLE_SPEED = 80  # Pixels per second
+
+    # Paddle physics
+    PADDLE_MAX_SPEED = 120  # Maximum pixels per second
+    PADDLE_ACCELERATION = 600  # Pixels per second squared
+    PADDLE_FRICTION = 400  # Deceleration when not pressing
 
     # Cat avatar position (bottom-left)
     CAT_X = 0
@@ -35,6 +40,7 @@ class BreakoutScene(Scene):
     BRICK_COLS = 18
     BRICK_START_X = 2
     BRICK_START_Y = 2
+    POWERUP_BRICK_COUNT = 12  # Number of powerup bricks to place randomly
 
     # Game states
     STATE_READY = 0
@@ -52,7 +58,8 @@ class BreakoutScene(Scene):
         self.state = self.STATE_READY
 
         # Paddle state
-        self.paddle_x = (config.DISPLAY_WIDTH - self.PADDLE_WIDTH) // 2
+        self.paddle_x = float((config.DISPLAY_WIDTH - self.PADDLE_WIDTH) // 2)
+        self.paddle_vx = 0.0  # Paddle velocity
 
         # Ball state (starts on paddle)
         self.ball_x = 0.0
@@ -65,18 +72,25 @@ class BreakoutScene(Scene):
         self.bricks = self._create_bricks()
 
     def _create_bricks(self):
-        """Create the brick grid"""
-        bricks = []
-        for row in range(self.BRICK_ROWS):
-            brick_row = []
-            for col in range(self.BRICK_COLS):
-                # Determine brick type based on position
-                # Make a pattern with some powerup bricks (unfilled)
-                if (row + col) % 7 == 0:
-                    brick_row.append('powerup')
-                else:
-                    brick_row.append('normal')
-            bricks.append(brick_row)
+        """Create the brick grid with randomly placed powerup bricks"""
+        # Start with all normal bricks
+        bricks = [['normal' for _ in range(self.BRICK_COLS)]
+                  for _ in range(self.BRICK_ROWS)]
+
+        # Randomly select positions for powerup bricks
+        total_bricks = self.BRICK_ROWS * self.BRICK_COLS
+        powerup_count = min(self.POWERUP_BRICK_COUNT, total_bricks)
+
+        # Create list of all positions
+        positions = [(r, c) for r in range(self.BRICK_ROWS)
+                     for c in range(self.BRICK_COLS)]
+
+        # Randomly pick positions without using shuffle (not in MicroPython)
+        for _ in range(powerup_count):
+            idx = random.randint(0, len(positions) - 1)
+            row, col = positions.pop(idx)
+            bricks[row][col] = 'powerup'
+
         return bricks
 
     def _position_ball_on_paddle(self):
@@ -107,6 +121,9 @@ class BreakoutScene(Scene):
         pass
 
     def update(self, dt):
+        # Update paddle physics (runs in all states for smooth feel)
+        self._update_paddle(dt)
+
         if self.state != self.STATE_PLAYING:
             return
 
@@ -133,6 +150,27 @@ class BreakoutScene(Scene):
         # Check win condition
         if self._all_bricks_destroyed():
             self.state = self.STATE_WIN
+
+    def _update_paddle(self, dt):
+        """Update paddle position based on velocity"""
+        # Apply friction/deceleration when not moving
+        if self.paddle_vx > 0:
+            self.paddle_vx = max(0, self.paddle_vx - self.PADDLE_FRICTION * dt)
+        elif self.paddle_vx < 0:
+            self.paddle_vx = min(0, self.paddle_vx + self.PADDLE_FRICTION * dt)
+
+        # Update position
+        self.paddle_x += self.paddle_vx * dt
+
+        # Clamp to screen bounds (don't overlap cat avatar)
+        min_x = CAT_AVATAR1["width"] + 1
+        max_x = config.DISPLAY_WIDTH - self.PADDLE_WIDTH
+        if self.paddle_x < min_x:
+            self.paddle_x = min_x
+            self.paddle_vx = 0
+        elif self.paddle_x > max_x:
+            self.paddle_x = max_x
+            self.paddle_vx = 0
 
     def _handle_wall_collisions(self):
         """Handle ball bouncing off walls"""
@@ -321,19 +359,15 @@ class BreakoutScene(Scene):
                 self.reset_game()
             return None
 
-        # Handle paddle movement (allow holding down)
+        # Handle paddle movement with acceleration
+        dt = 1.0 / config.FPS  # Approximate dt for input handling
         if self.input.is_pressed('left'):
-            self.paddle_x -= self.PADDLE_SPEED / config.FPS
-            # Don't overlap cat avatar
-            min_x = CAT_AVATAR1["width"] + 1
-            if self.paddle_x < min_x:
-                self.paddle_x = min_x
+            self.paddle_vx -= self.PADDLE_ACCELERATION * dt
+            self.paddle_vx = max(-self.PADDLE_MAX_SPEED, self.paddle_vx)
 
         if self.input.is_pressed('right'):
-            self.paddle_x += self.PADDLE_SPEED / config.FPS
-            max_x = config.DISPLAY_WIDTH - self.PADDLE_WIDTH
-            if self.paddle_x > max_x:
-                self.paddle_x = max_x
+            self.paddle_vx += self.PADDLE_ACCELERATION * dt
+            self.paddle_vx = min(self.PADDLE_MAX_SPEED, self.paddle_vx)
 
         # Keep ball on paddle when not launched
         if self.state == self.STATE_READY:
