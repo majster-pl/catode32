@@ -5,6 +5,7 @@ import random
 import config
 from scene import Scene
 from assets.minigame_assets import PAW_LARGE1, RING_17
+from entities.character import CharacterEntity
 
 
 class TicTacToeScene(Scene):
@@ -44,6 +45,7 @@ class TicTacToeScene(Scene):
         self.round_number = 0
         self.player_score = 0
         self.pet_score = 0
+        self.character = None
         self.reset_game()
 
     def reset_game(self):
@@ -62,6 +64,8 @@ class TicTacToeScene(Scene):
 
     def load(self):
         super().load()
+        self.character = CharacterEntity(100, 63)
+        self.character.set_pose("idle_laying")
 
     def unload(self):
         super().unload()
@@ -76,6 +80,8 @@ class TicTacToeScene(Scene):
         pass
 
     def update(self, dt):
+        self.character.update(dt)
+
         # Handle pet's turn with a small delay
         if self.state == self.STATE_PET_TURN:
             self.pet_think_timer += dt
@@ -256,6 +262,8 @@ class TicTacToeScene(Scene):
         # Draw game state messages
         self._draw_state_message()
 
+        self.character.draw(self.renderer)
+
     def _draw_board(self):
         """Draw the 3x3 grid lines"""
         # Board span: 3 cells of 19px + 2 lines of 1px = 59px
@@ -313,13 +321,13 @@ class TicTacToeScene(Scene):
     def _draw_state_message(self):
         """Draw end game messages"""
         if self.state == self.STATE_PLAYER_WIN:
-            self.renderer.draw_text("WIN!", 70, 22)
+            self.renderer.draw_text("WIN!", 70, 21)
         elif self.state == self.STATE_PET_WIN:
-            self.renderer.draw_text("LOSE", 70, 22)
+            self.renderer.draw_text("LOSE", 70, 21)
         elif self.state == self.STATE_DRAW:
-            self.renderer.draw_text("DRAW", 70, 22)
+            self.renderer.draw_text("DRAW", 70, 21)
         elif self.state == self.STATE_PET_TURN:
-            self.renderer.draw_text("...", 76, 22)
+            self.renderer.draw_text("...", 76, 20)
 
     def handle_input(self):
         # Handle game over - press A to restart

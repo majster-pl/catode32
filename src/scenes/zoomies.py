@@ -220,7 +220,7 @@ class ZoomiesScene(Scene):
         else:
             # Spawn a ground obstacle
             options = [SMALLTREE1, PLANT1, PLANT2]
-            if self.current_speed > 90:
+            if self.current_speed > 110:
                 options.append(PLANT6)
             sprite = random.choice(options)
             self.obstacles.append({

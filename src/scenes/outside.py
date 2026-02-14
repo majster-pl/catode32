@@ -79,7 +79,7 @@ class OutsideScene(Scene):
         )
 
         # Create character and butterflies as entities
-        self.character = CharacterEntity(64, 60)
+        self.character = CharacterEntity(64, 62)
         butterfly1 = ButterflyEntity(110, 20)
         butterfly2 = ButterflyEntity(50, 30)
         butterfly2.anim_speed = 10
