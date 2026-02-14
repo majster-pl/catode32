@@ -218,6 +218,8 @@ class SceneManager:
             minigame_items.append(MenuItem("Maze", icon=MINIGAME_ICONS.get("Maze"), action=('scene', 'maze')))
         if 'breakout' in self._scene_classes:
             minigame_items.append(MenuItem("Breakout", icon=MINIGAME_ICONS.get("Breakout"), action=('scene', 'breakout')))
+        if 'tictactoe' in self._scene_classes:
+            minigame_items.append(MenuItem("TicTacToe", icon=MINIGAME_ICONS.get("TicTacToe"), action=('scene', 'tictactoe')))
         if minigame_items:
             items.append(MenuItem("Minigames", icon=MINIGAMES_ICON, submenu=minigame_items))
 
