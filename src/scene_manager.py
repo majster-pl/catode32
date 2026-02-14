@@ -148,7 +148,7 @@ class SceneManager:
     def _update_transition(self, dt):
         """Advance transition animation"""
         # Cap dt to prevent jumps after slow scene loads
-        dt = min(dt, self.transition_duration / 4)
+        dt = min(dt, self.transition_duration * 0.5)
         # Advance progress
         self.transition_progress += dt / self.transition_duration
 
@@ -256,9 +256,9 @@ class SceneManager:
         # Debug submenu
         debug_items = []
         if 'debug_context' in self._scene_classes:
-            debug_items.append(MenuItem("Context", action=('scene', 'debug_context')))
+            debug_items.append(MenuItem("Context", icon=WRENCH_ICON, action=('scene', 'debug_context')))
         if 'debug_memory' in self._scene_classes:
-            debug_items.append(MenuItem("Memory", action=('scene', 'debug_memory')))
+            debug_items.append(MenuItem("Memory", icon=WRENCH_ICON, action=('scene', 'debug_memory')))
         if debug_items:
             items.append(MenuItem("Debug", icon=WRENCH_ICON, submenu=debug_items))
 
