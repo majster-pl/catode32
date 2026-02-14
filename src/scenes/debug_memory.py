@@ -1,7 +1,10 @@
+import gc
+import sys
 from scene import Scene
 
-class DebugScene(Scene):
-    """Debug scene that displays all context values"""
+
+class DebugMemoryScene(Scene):
+    """Debug scene that displays memory usage"""
 
     LINES_VISIBLE = 8  # 64px / 8px per line
     LINE_HEIGHT = 8
@@ -25,44 +28,31 @@ class DebugScene(Scene):
         pass
 
     def _build_lines(self):
-        """Build display lines from context"""
+        """Build display lines from memory info"""
+        gc.collect()
         self.lines = []
 
-        # Pet stats
-        self.lines.append("Pet stats:")
-        stats = [
-            ('fullness', self.context.fullness),
-            ('stimulation', self.context.stimulation),
-            ('energy', self.context.energy),
-            ('vigor', self.context.vigor),
-            ('comfort', self.context.comfort),
-            ('playfulness', self.context.playfulness),
-            ('focus', self.context.focus),
-            ('affection', self.context.affection),
-            ('health', self.context.health),
-            ('fulfillment', self.context.fulfillment),
-            ('cleanliness', self.context.cleanliness),
-            ('curiosity', self.context.curiosity),
-            ('confidence', self.context.confidence),
-        ]
-        for name, value in stats:
-            self.lines.append(f"{name}: {value}")
+        free = gc.mem_free()
+        alloc = gc.mem_alloc()
+        total = free + alloc
 
+        self.lines.append("Memory:")
+        self.lines.append(f"  Free: {free}")
+        self.lines.append(f"  Used: {alloc}")
+        self.lines.append(f"  Total: {total}")
         self.lines.append("")
 
-        # Inventory
-        self.lines.append("Inventory:")
-        for category, items in self.context.inventory.items():
-            self.lines.append(f"{category}:")
-            for item in items:
-                self.lines.append(f"  {item}")
+        # List loaded modules
+        self.lines.append("Modules loaded:")
+        modules = sorted(sys.modules.keys())
+        for mod in modules:
+            self.lines.append(f"  {mod}")
 
     def update(self, dt):
-        # Refresh values periodically
         self._build_lines()
 
     def draw(self):
-        """Draw the debug info"""
+        """Draw the memory info"""
         self.renderer.clear()
 
         visible_end = min(self.scroll_offset + self.LINES_VISIBLE, len(self.lines))
@@ -100,9 +90,7 @@ class DebugScene(Scene):
         if self.input.was_just_pressed('down'):
             self.scroll_offset = min(max_scroll, self.scroll_offset + 1)
 
-        # B button or menu1 to go back (will be caught by SceneManager for menu1)
         if self.input.was_just_pressed('b'):
-            # Import here to avoid circular imports
             from scenes.normal import NormalScene
             return ('change_scene', NormalScene)
 

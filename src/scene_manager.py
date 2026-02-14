@@ -21,7 +21,7 @@ class SceneManager:
         # Track loaded scenes for memory management
         self.scene_cache = {}
         self.scene_access_order = []  # Track LRU order explicitly
-        self.max_cached_scenes = 3  # Limit cached scenes for memory
+        self.max_cached_scenes = 2  # Limit cached scenes for memory
 
         # Big menu (menu1) - consistent across all scenes
         self.big_menu = Menu(renderer, input_handler)
@@ -253,9 +253,14 @@ class SceneManager:
         if minigame_items:
             items.append(MenuItem("Minigames", icon=MINIGAMES_ICON, submenu=minigame_items))
 
-        # Debug option
-        if 'debug' in self._scene_classes:
-            items.append(MenuItem("Debug", icon=WRENCH_ICON, action=('scene', 'debug')))
+        # Debug submenu
+        debug_items = []
+        if 'debug_context' in self._scene_classes:
+            debug_items.append(MenuItem("Context", action=('scene', 'debug_context')))
+        if 'debug_memory' in self._scene_classes:
+            debug_items.append(MenuItem("Memory", action=('scene', 'debug_memory')))
+        if debug_items:
+            items.append(MenuItem("Debug", icon=WRENCH_ICON, submenu=debug_items))
 
         return items
 

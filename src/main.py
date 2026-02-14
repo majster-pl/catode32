@@ -35,7 +35,8 @@ class Game:
         self.scene_manager.register_scene('maze', 'scenes.maze.MazeScene')
         self.scene_manager.register_scene('breakout', 'scenes.breakout.BreakoutScene')
         self.scene_manager.register_scene('tictactoe', 'scenes.tictactoe.TicTacToeScene')
-        self.scene_manager.register_scene('debug', 'scenes.debug.DebugScene')
+        self.scene_manager.register_scene('debug_context', 'scenes.debug_context.DebugContextScene')
+        self.scene_manager.register_scene('debug_memory', 'scenes.debug_memory.DebugMemoryScene')
 
         self.scene_manager.change_scene_by_name('normal')
 
