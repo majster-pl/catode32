@@ -2,7 +2,7 @@
 # Heads
 #
 
-CHAR_HEAD1 = { # 3/4 Facing left, neutral
+CHAR_HEAD_SIDE_NEUTRAL = { # 3/4 Facing left, neutral
     "width": 23,
     "height": 24,
     "anchor_x": 15,
@@ -21,7 +21,7 @@ CHAR_HEAD1 = { # 3/4 Facing left, neutral
     ]
 }
 
-CHAR_HEAD2 = { # Straight forward, neutral
+CHAR_HEAD_FRONT_NEUTRAL = { # Straight forward, neutral
     "width": 25,
     "height": 24,
     "anchor_x": 13,
@@ -36,7 +36,7 @@ CHAR_HEAD2 = { # Straight forward, neutral
     ]
 }
 
-CHAR_HEAD3 = { # Straight forward, surprised
+CHAR_HEAD_FRONT_SHOCKED = { # Straight forward, surprised
     "width": 27,
     "height": 25,
     "anchor_x": 14,
@@ -51,7 +51,7 @@ CHAR_HEAD3 = { # Straight forward, surprised
     ]
 }
 
-CHAR_HEAD4 = { # 3/4 Facing left, airplane ears
+CHAR_HEAD_SIDE_AIRPLANE = { # 3/4 Facing left, airplane ears
     "width": 30,
     "height": 21,
     "anchor_x": 23,
@@ -76,7 +76,7 @@ CHAR_HEAD4 = { # 3/4 Facing left, airplane ears
 # Bodies
 #
 
-CHAR_BODY1 = { # 3/4 facing left, sitting
+CHAR_BODY_SIDE_SITTING = { # 3/4 facing left, sitting
     "width": 22,
     "height": 18,
     "anchor_x": 10,
@@ -96,7 +96,7 @@ CHAR_BODY1 = { # 3/4 facing left, sitting
     ]
 }
 
-CHAR_BODY2 = { # 3/4 facing left, laying
+CHAR_BODY_SIDE_LAYING = { # 3/4 facing left, laying
     "width": 29,
     "height": 17,
     "anchor_x": 14,
@@ -121,7 +121,7 @@ CHAR_BODY2 = { # 3/4 facing left, laying
     ]
 }
 
-CHAR_BODY3 = { # Straight forward, sitting
+CHAR_BODY_FRONT_SITTING = { # Straight forward, sitting
     "width": 17,
     "height": 18,
     "anchor_x": 9,
@@ -138,7 +138,7 @@ CHAR_BODY3 = { # Straight forward, sitting
     ]
 }
 
-CHAR_BODY4 = { # 3/4 left, standing
+CHAR_BODY_SIDE_STANDING = { # 3/4 left, standing
     "width": 29,
     "height": 21,
     "anchor_x": 15,
@@ -169,7 +169,7 @@ CHAR_BODY4 = { # 3/4 left, standing
 # Eyes
 #
 
-CHAR_EYES1 = { # 3/4 facing left, neutral
+CHAR_EYES_LEFT_NEUTRAL = { # 3/4 facing left, neutral
     "width": 13,
     "height": 3,
     "anchor_x": 6,
@@ -184,7 +184,7 @@ CHAR_EYES1 = { # 3/4 facing left, neutral
     ]
 }
 
-CHAR_EYES2 = { # Straight forward, neutral/sleepy
+CHAR_EYES_FRONT_NEUTRAL = { # Straight forward, neutral/sleepy
     "width": 17,
     "height": 3,
     "anchor_x": 8,
@@ -199,7 +199,7 @@ CHAR_EYES2 = { # Straight forward, neutral/sleepy
     ]
 }
 
-CHAR_EYES3 = { # Straight forward, neutral
+CHAR_EYES_FRONT_NEUTRAL2 = { # Straight forward, neutral
     "width": 17,
     "height": 4,
     "anchor_x": 8,
@@ -216,7 +216,7 @@ CHAR_EYES3 = { # Straight forward, neutral
     ]
 }
 
-CHAR_EYES4 = { # Straight forward, shocked
+CHAR_EYES_FRONT_SHOCKED = { # Straight forward, shocked
     "width": 15,
     "height": 7,
     "anchor_x": 7,
@@ -235,7 +235,7 @@ CHAR_EYES4 = { # Straight forward, shocked
     ]
 }
 
-CHAR_EYES5 = { # 3/4 Left, annoyed
+CHAR_EYES_SIDE_ANNOYED = { # 3/4 Left, annoyed
     "width": 13,
     "height": 4,
     "anchor_x": 6,
@@ -250,7 +250,7 @@ CHAR_EYES5 = { # 3/4 Left, annoyed
     ]
 }
 
-CHAR_EYES6 = { # 3/4 left, happy
+CHAR_EYES_SIDE_HAPPY = { # 3/4 left, happy
     "width": 13,
     "height": 2,
     "anchor_x": 6,
@@ -266,7 +266,7 @@ CHAR_EYES6 = { # 3/4 left, happy
 # Tails
 #
 
-CHAR_TAIL1 = { # Neutral
+CHAR_TAIL_NEUTRAL = { # Neutral
     "width": 15,
     "height": 21,
     "anchor_x": 3,
@@ -292,7 +292,7 @@ CHAR_TAIL1 = { # Neutral
     ]
 } 
 
-CHAR_TAIL2 = { # Neutral
+CHAR_TAIL_NEUTRAL2 = { # Neutral
     "width": 13,
     "height": 23,
     "anchor_x": 6,
@@ -312,7 +312,7 @@ CHAR_TAIL2 = { # Neutral
     ]
 }
 
-CHAR_TAIL3 = { # Shocked
+CHAR_TAIL_SHOCKED = { # Shocked
     "width": 9,
     "height": 19,
     "anchor_x": 1,
@@ -331,7 +331,7 @@ CHAR_TAIL3 = { # Shocked
     ]
 }
 
-CHAR_TAIL4 = {
+CHAR_TAIL_ANNOYED = {
     "width": 19,
     "height": 8,
     "anchor_x": 1,
@@ -360,57 +360,57 @@ CHAR_TAIL4 = {
 #
 POSES = {
     "idle": {
-        "head": CHAR_HEAD1,
-        "body": CHAR_BODY1,
-        "eyes": CHAR_EYES1,
-        "tail": CHAR_TAIL1,
+        "head": CHAR_HEAD_SIDE_NEUTRAL,
+        "body": CHAR_BODY_SIDE_SITTING,
+        "eyes": CHAR_EYES_LEFT_NEUTRAL,
+        "tail": CHAR_TAIL_NEUTRAL,
     },
     "idle_laying": {
-        "head": CHAR_HEAD1,
-        "body": CHAR_BODY2,
-        "eyes": CHAR_EYES1,
-        "tail": CHAR_TAIL2,
+        "head": CHAR_HEAD_SIDE_NEUTRAL,
+        "body": CHAR_BODY_SIDE_LAYING,
+        "eyes": CHAR_EYES_LEFT_NEUTRAL,
+        "tail": CHAR_TAIL_NEUTRAL2,
     },
     "idle_forward": {
-        "head": CHAR_HEAD2,
-        "body": CHAR_BODY3,
-        "eyes": CHAR_EYES3,
-        "tail": CHAR_TAIL1,
+        "head": CHAR_HEAD_FRONT_NEUTRAL,
+        "body": CHAR_BODY_FRONT_SITTING,
+        "eyes": CHAR_EYES_FRONT_NEUTRAL2,
+        "tail": CHAR_TAIL_NEUTRAL,
     },
     "idle_forward_sleepy": {
-        "head": CHAR_HEAD2,
-        "body": CHAR_BODY3,
-        "eyes": CHAR_EYES2,
-        "tail": CHAR_TAIL1,
+        "head": CHAR_HEAD_FRONT_NEUTRAL,
+        "body": CHAR_BODY_FRONT_SITTING,
+        "eyes": CHAR_EYES_FRONT_NEUTRAL,
+        "tail": CHAR_TAIL_NEUTRAL,
     },
     "shocked_forward": {
-        "head": CHAR_HEAD3,
-        "body": CHAR_BODY3,
-        "eyes": CHAR_EYES4,
-        "tail": CHAR_TAIL3,
+        "head": CHAR_HEAD_FRONT_SHOCKED,
+        "body": CHAR_BODY_FRONT_SITTING,
+        "eyes": CHAR_EYES_FRONT_SHOCKED,
+        "tail": CHAR_TAIL_SHOCKED,
     },
     "annoyed": {
-        "head": CHAR_HEAD4,
-        "body": CHAR_BODY4,
-        "eyes": CHAR_EYES5,
-        "tail": CHAR_TAIL4,
+        "head": CHAR_HEAD_SIDE_AIRPLANE,
+        "body": CHAR_BODY_SIDE_STANDING,
+        "eyes": CHAR_EYES_SIDE_ANNOYED,
+        "tail": CHAR_TAIL_ANNOYED,
     },
     "idle_stand": {
-        "head": CHAR_HEAD1,
-        "body": CHAR_BODY4,
-        "eyes": CHAR_EYES1,
-        "tail": CHAR_TAIL1,
+        "head": CHAR_HEAD_SIDE_NEUTRAL,
+        "body": CHAR_BODY_SIDE_STANDING,
+        "eyes": CHAR_EYES_LEFT_NEUTRAL,
+        "tail": CHAR_TAIL_NEUTRAL,
     },
     "annoyed_laying": {
-        "head": CHAR_HEAD4,
-        "body": CHAR_BODY2,
-        "eyes": CHAR_EYES5,
-        "tail": CHAR_TAIL4,
+        "head": CHAR_HEAD_SIDE_AIRPLANE,
+        "body": CHAR_BODY_SIDE_LAYING,
+        "eyes": CHAR_EYES_SIDE_ANNOYED,
+        "tail": CHAR_TAIL_ANNOYED,
     },
     "happy_laying": {
-        "head": CHAR_HEAD1,
-        "body": CHAR_BODY2,
-        "eyes": CHAR_EYES6,
-        "tail": CHAR_TAIL2,
+        "head": CHAR_HEAD_SIDE_NEUTRAL,
+        "body": CHAR_BODY_SIDE_LAYING,
+        "eyes": CHAR_EYES_SIDE_HAPPY,
+        "tail": CHAR_TAIL_NEUTRAL2,
     }
 }
