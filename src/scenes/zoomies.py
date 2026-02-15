@@ -21,8 +21,8 @@ class ZoomiesScene(Scene):
     BASE_SPEED = 48  # Starting speed (pixels per second)
     MAX_SPEED = 120  # Maximum speed
     SPEED_INCREASE_INTERVAL = 5  # Points between speed increases
-    SPAWN_MIN = 1.2  # Minimum seconds between obstacles
-    SPAWN_MAX = 3.0  # Maximum seconds between obstacles
+    SPAWN_MIN = 1.3  # Minimum seconds between obstacles
+    SPAWN_MAX = 3.2  # Maximum seconds between obstacles
     CLOUD_SPEED_RATIO = 0.2  # Cloud speed as ratio of ground speed
     BIRD_CHANCE = 0.2  # Chance to spawn a bird instead of ground obstacle
     BIRD_Y_LOW = 38  # Bird y position when low (jump over)

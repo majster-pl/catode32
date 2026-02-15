@@ -50,15 +50,15 @@ class DebugPosesScene(Scene):
         # Draw floor
         self.renderer.draw_line(0, 60, 128, 60)
 
-        # Draw character
-        self.character.draw(self.renderer)
-
         # Draw pose name at top (split into position, direction, emotion)
         if self.pose_names:
             pose_name = self.pose_names[self.pose_index]
             parts = pose_name.split(".")
             for i, part in enumerate(parts):
                 self.renderer.draw_text(part, 0, i * 8)
+        
+        # Draw character
+        self.character.draw(self.renderer)
 
         # Draw anchor/attachment point markers if enabled
         if self.show_anchors:
