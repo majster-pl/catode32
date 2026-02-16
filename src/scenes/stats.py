@@ -1,5 +1,5 @@
 from scene import Scene
-from ui import Popup
+from ui import Popup, Scrollbar
 
 # Stats configuration with display info and descriptions
 STATS_CONFIG = [
@@ -61,7 +61,8 @@ class StatsScene(Scene):
         # Build list of just the stats (for selection indexing)
         self.stats_list = [item for item in STATS_CONFIG if item["type"] == "stat"]
 
-        # Detail popup
+        # UI components
+        self.scrollbar = Scrollbar(renderer)
         self.popup = Popup(renderer, x=4, y=8, width=120, height=48)
 
     def load(self):
@@ -209,24 +210,9 @@ class StatsScene(Scene):
 
     def _draw_scrollbar(self):
         """Draw scrollbar on right side"""
-        total_height = self._get_total_height()
-        if total_height <= self.VISIBLE_HEIGHT:
-            return  # No scrollbar needed
-
-        scrollbar_x = 126
-        track_height = self.VISIBLE_HEIGHT
-
-        # Calculate thumb size and position
-        thumb_height = max(4, int(track_height * self.VISIBLE_HEIGHT / total_height))
-        scroll_range = total_height - self.VISIBLE_HEIGHT
-
-        if scroll_range > 0:
-            thumb_y = int(self.scroll_offset / scroll_range * (track_height - thumb_height))
-        else:
-            thumb_y = 0
-
-        # Draw thumb
-        self.renderer.draw_rect(scrollbar_x, thumb_y, 2, thumb_height, filled=True)
+        self.scrollbar.draw(
+            self._get_total_height(), self.VISIBLE_HEIGHT, self.scroll_offset
+        )
 
     def _draw_detail_popup(self):
         """Draw the detail popup for selected stat"""

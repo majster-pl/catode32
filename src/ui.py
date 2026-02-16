@@ -3,6 +3,55 @@
 from assets.icons import UP_ICON, DOWN_ICON
 
 
+class Scrollbar:
+    """A reusable scrollbar component."""
+
+    def __init__(self, renderer, x=126, y=0, track_height=64, min_thumb_height=4):
+        """Initialize the scrollbar.
+
+        Args:
+            renderer: The renderer instance for drawing
+            x: X position of the scrollbar
+            y: Y position (top of track)
+            track_height: Height of the scrollbar track
+            min_thumb_height: Minimum height of the thumb
+        """
+        self.renderer = renderer
+        self.x = x
+        self.y = y
+        self.track_height = track_height
+        self.min_thumb_height = min_thumb_height
+
+    def draw(self, total_items, visible_items, scroll_offset):
+        """Draw the scrollbar if content exceeds visible area.
+
+        Args:
+            total_items: Total number of items (or total pixel height)
+            visible_items: Number of visible items (or visible pixel height)
+            scroll_offset: Current scroll position
+        """
+        if total_items <= visible_items:
+            return
+
+        # Calculate thumb size proportional to visible/total ratio
+        thumb_height = max(
+            self.min_thumb_height,
+            int(self.track_height * visible_items / total_items)
+        )
+
+        # Calculate thumb position
+        scroll_range = total_items - visible_items
+        if scroll_range > 0:
+            thumb_y = self.y + int(
+                scroll_offset / scroll_range * (self.track_height - thumb_height)
+            )
+        else:
+            thumb_y = self.y
+
+        # Draw thumb (2px wide filled rectangle)
+        self.renderer.draw_rect(self.x, thumb_y, 2, thumb_height, filled=True)
+
+
 class Popup:
     """A reusable popup window component.
 

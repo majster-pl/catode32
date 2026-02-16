@@ -2,6 +2,8 @@
 menu.py - Composable menu component for UI navigation
 """
 
+from ui import Scrollbar
+
 
 class MenuItem:
     """Represents a single menu item"""
@@ -28,12 +30,12 @@ class Menu:
     VISIBLE_ITEMS = 4
     ROW_HEIGHT = 16
     ICON_SIZE = 13
-    SCROLLBAR_WIDTH = 4
     CONTENT_WIDTH = 120  # 128 - scrollbar area
 
     def __init__(self, renderer, input_handler):
         self.renderer = renderer
         self.input = input_handler
+        self.scrollbar = Scrollbar(renderer)
 
         self.active = False
         self.items = []
@@ -216,28 +218,7 @@ class Menu:
 
     def _draw_scrollbar(self):
         """Draw scrollbar if items exceed visible area"""
-        if len(self.items) <= self.VISIBLE_ITEMS:
-            return
-
-        scrollbar_x = 124
-        track_height = 64
-
-        # Calculate thumb size proportional to visible/total ratio
-        thumb_height = max(8, int(track_height * self.VISIBLE_ITEMS / len(self.items)))
-
-        # Calculate thumb position
-        scroll_range = len(self.items) - self.VISIBLE_ITEMS
-        if scroll_range > 0:
-            thumb_y = int(self.scroll_offset / scroll_range * (track_height - thumb_height))
-        else:
-            thumb_y = 0
-
-        # Draw track (thin line)
-        self.renderer.draw_line(scrollbar_x + 2, 0, scrollbar_x + 2, 63)
-
-        # Draw thumb (filled rectangle)
-        self.renderer.draw_rect(scrollbar_x, thumb_y, self.SCROLLBAR_WIDTH,
-                                thumb_height, filled=True)
+        self.scrollbar.draw(len(self.items), self.VISIBLE_ITEMS, self.scroll_offset)
 
     def _draw_confirmation(self):
         """Draw confirmation dialog"""

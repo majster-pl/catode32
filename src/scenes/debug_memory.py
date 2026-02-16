@@ -1,6 +1,7 @@
 import gc
 import sys
 from scene import Scene
+from ui import Scrollbar
 
 
 class DebugMemoryScene(Scene):
@@ -11,6 +12,7 @@ class DebugMemoryScene(Scene):
 
     def __init__(self, context, renderer, input):
         super().__init__(context, renderer, input)
+        self.scrollbar = Scrollbar(renderer)
         self.scroll_offset = 0
         self.lines = []
 
@@ -67,18 +69,7 @@ class DebugMemoryScene(Scene):
 
     def _draw_scroll_indicator(self):
         """Draw a simple scroll indicator on the right"""
-        indicator_x = 126
-        track_height = 64
-
-        thumb_height = max(4, int(track_height * self.LINES_VISIBLE / len(self.lines)))
-        scroll_range = len(self.lines) - self.LINES_VISIBLE
-
-        if scroll_range > 0:
-            thumb_y = int(self.scroll_offset / scroll_range * (track_height - thumb_height))
-        else:
-            thumb_y = 0
-
-        self.renderer.draw_rect(indicator_x, thumb_y, 2, thumb_height, filled=True)
+        self.scrollbar.draw(len(self.lines), self.LINES_VISIBLE, self.scroll_offset)
 
     def handle_input(self):
         """Handle scrolling input"""
