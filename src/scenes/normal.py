@@ -57,7 +57,7 @@ class NormalScene(Scene):
         )
 
         # Fish - store reference for rotation animation
-        self.fish_obj = {"sprite": FISH1, "x": 60, "y": 20, "rotate": 0}
+        self.fish_obj = {"sprite": FISH1, "x": 160, "y": 20, "rotate": 0}
         self.environment.layers[LAYER_FOREGROUND].append(self.fish_obj)
 
         # Add more furniture on the right side (visible when panned)
