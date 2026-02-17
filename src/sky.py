@@ -193,8 +193,8 @@ class ShootingStarEvent:
 
 # Daytime sky event types
 SKY_EVENT_TYPES = [
-    {"sprite": HOT_AIR_BALLOON, "speed": 8, "mirror_when_right": False},
-    {"sprite": PLANE_TINY, "speed": 25, "mirror_when_right": True},
+    {"sprite": HOT_AIR_BALLOON, "speed": 4, "mirror_when_right": False},
+    {"sprite": PLANE_TINY, "speed": 12, "mirror_when_right": True},
 ]
 
 
@@ -433,8 +433,9 @@ class SkyRenderer:
             environment: Environment instance
             layer: Layer constant (e.g., LAYER_BACKGROUND)
         """
-        # Add star drawing as custom draw
+        # Add custom draw functions
         environment.add_custom_draw(layer, self._draw_stars)
+        environment.add_custom_draw(layer, self._draw_sky_events)
 
         # Add celestial body
         if self.celestial_sprite:
@@ -604,28 +605,59 @@ class SkyRenderer:
     def _maybe_spawn_sky_event(self):
         """Check if a daytime sky event should spawn (rare)"""
         if random.random() < 0.001:  # ~0.1% chance per frame
-            # Pick random event type
-            event_type = random.choice(SKY_EVENT_TYPES)
+            self.spawn_sky_event()
 
-            # Random direction
+    def spawn_sky_event(self, event_index=None, going_right=None):
+        """
+        Force spawn a sky event (useful for testing).
+
+        Args:
+            event_index: Index into SKY_EVENT_TYPES (0=balloon, 1=plane), or None for random
+            going_right: Direction, or None for random
+        """
+        if event_index is None:
+            event_type = random.choice(SKY_EVENT_TYPES)
+        else:
+            event_type = SKY_EVENT_TYPES[event_index % len(SKY_EVENT_TYPES)]
+
+        if going_right is None:
             going_right = random.random() < 0.5
 
-            # Start position - off screen on the appropriate side
-            if going_right:
-                start_x = -event_type["sprite"]["width"] - 10
-            else:
-                start_x = self.world_width + 10
+        # Start position - off screen on the appropriate side
+        if going_right:
+            start_x = -event_type["sprite"]["width"] - 10
+        else:
+            start_x = self.world_width + 10
 
-            # Random height in upper portion of sky
-            y = random.randint(5, 35)
+        # Random height in upper portion of sky
+        y = random.randint(2, 22)
 
-            self.sky_event = SkyEvent(event_type, start_x, y, going_right, self.world_width)
+        self.sky_event = SkyEvent(event_type, start_x, y, going_right, self.world_width)
 
     def get_star_offset(self):
         """Get combined star offset for time-of-night and seasonal drift"""
         time_offset = int((self.elapsed_time % 3600) / 3600 * 20)
         season_offset = int((self.day_of_year % 365) / 365 * 60)
         return time_offset + season_offset
+
+    def _draw_sky_events(self, renderer, camera_x, parallax):
+        """Draw daytime sky events (balloon, plane, etc.)"""
+        if not self.sky_event or not self.sky_event.active:
+            return
+
+        camera_offset = int(camera_x * parallax)
+        event = self.sky_event
+        screen_x = int(event.x - camera_offset)
+
+        # Only draw if on screen
+        if -event.sprite["width"] < screen_x < config.DISPLAY_WIDTH + event.sprite["width"]:
+            renderer.draw_sprite_obj(
+                event.sprite,
+                screen_x,
+                event.y,
+                frame=0,
+                mirror_h=event.mirror
+            )
 
     def _draw_stars(self, renderer, camera_x, parallax):
         """Draw stars (used as custom draw function)"""
@@ -686,20 +718,6 @@ class SkyRenderer:
             x1, y1, x2, y2 = self.shooting_star.get_points()
             if 0 <= x2 < config.DISPLAY_WIDTH and 0 <= y2 < STAR_FIELD_HEIGHT + 10:
                 renderer.draw_line(x1, y1, x2, y2)
-
-        # Draw daytime sky event if active
-        if self.sky_event and self.sky_event.active:
-            event = self.sky_event
-            screen_x = int(event.x - camera_offset)
-            # Only draw if on screen
-            if -event.sprite["width"] < screen_x < config.DISPLAY_WIDTH + event.sprite["width"]:
-                renderer.draw_sprite_obj(
-                    event.sprite,
-                    screen_x,
-                    event.y,
-                    frame=0,
-                    mirror_h=event.mirror
-                )
 
     def make_precipitation_drawer(self, parallax, layer_index):
         """
