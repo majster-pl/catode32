@@ -4,7 +4,7 @@ from environment import Environment, LAYER_BACKGROUND, LAYER_FOREGROUND
 from entities.character import CharacterEntity
 from entities.butterfly import ButterflyEntity
 from menu import Menu, MenuItem
-from reactions import ReactionManager
+from actions import ReactionManager, apply_action
 from assets.icons import TOYS_ICON, HEART_ICON, HEART_BUBBLE_ICON, HAND_ICON, KIBBLE_ICON, TOY_ICONS, SNACK_ICONS, SUN_ICON
 from assets.nature import PLANT1, PLANTER1, PLANT2, CLOUD1, CLOUD2
 
@@ -209,27 +209,5 @@ class OutsideScene(Scene):
 
     def _handle_menu_action(self, action):
         """Handle menu selection"""
-        if not action:
-            return
-
-        action_type = action[0]
-
-        if action_type == "pets":
-            self.context.affection = min(100, self.context.affection + 5)
-            self.reactions.trigger("pets", self.character)
-        elif action_type == "point_bird":
-            self.context.curiosity = min(100, self.context.curiosity + 10)
-            self.context.stimulation = min(100, self.context.stimulation + 5)
-            self.reactions.trigger("point_bird", self.character)
-        elif action_type == "throw_stick":
-            self.context.playfulness = min(100, self.context.playfulness + 15)
-            self.context.energy = max(0, self.context.energy - 10)
-            self.reactions.trigger("throw_stick", self.character)
-        elif action_type == "treat":
-            self.context.fullness = min(100, self.context.fullness + 5)
-            self.context.affection = min(100, self.context.affection + 3)
-            self.reactions.trigger("snack", self.character)
-        elif action_type == "toy":
-            self.context.playfulness = min(100, self.context.playfulness + 15)
-            self.context.stimulation = min(100, self.context.stimulation + 10)
-            self.reactions.trigger("toy", self.character)
+        if action:
+            apply_action(action[0], self.context, self.character, self.reactions)

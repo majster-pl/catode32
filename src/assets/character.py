@@ -459,6 +459,16 @@ CHAR_EYES_SIDE_HAPPY = { # 3/4 left, happy
     ]
 }
 
+CHAR_EYES_FRONT_HAPPY = { # Forward, happy
+    "width": 15,
+    "height": 2,
+    "anchor_x": 7,
+    "anchor_y": 2,
+    "frames": [
+        bytearray([0x78, 0x3c, 0x84, 0x42])
+    ]
+}
+
 CHAR_EYES_SIDE_ALOOF = { # 3/4 side, aloof
     "width": 13,
     "height": 5,
@@ -473,6 +483,23 @@ CHAR_EYES_SIDE_ALOOF = { # 3/4 side, aloof
         bytearray([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0x78, 0x10, 0x10, ]),
         bytearray([0x00, 0x00, 0x00, 0x00, 0x10, 0x10, 0xe8, 0x68, 0x10, 0x10, ]),
         bytearray([0x00, 0x00, 0x10, 0x10, 0x20, 0x20, 0xe8, 0x68, 0x10, 0x10, ]),
+    ]
+}
+
+CHAR_EYES_FRONT_ALOOF = { # Forward, aloof
+    "width": 15,
+    "height": 5,
+    "anchor_x": 7,
+    "anchor_y": 3,
+    "speed": 6,
+    "extra_frames": 20,
+    "frames": [
+        bytearray([0x20, 0x10, 0x40, 0x20, 0x48, 0x24, 0xcc, 0x66, 0x30, 0x18, ]),
+        bytearray([0x00, 0x00, 0x20, 0x10, 0x40, 0x20, 0xcc, 0x66, 0x30, 0x18, ]),
+        bytearray([0x00, 0x00, 0x00, 0x00, 0x20, 0x10, 0xcc, 0x66, 0x30, 0x18, ]),
+        bytearray([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfc, 0x7e, 0x30, 0x18, ]),
+        bytearray([0x00, 0x00, 0x00, 0x00, 0x20, 0x10, 0xcc, 0x66, 0x30, 0x18]),
+        bytearray([0x00, 0x00, 0x20, 0x10, 0x40, 0x20, 0xcc, 0x66, 0x30, 0x18, ]),
     ]
 }
 
@@ -653,6 +680,24 @@ POSES = {
                 "body": CHAR_BODY_FRONT_SITTING,
                 "eyes": CHAR_EYES_FRONT_SHOCKED,
                 "tail": CHAR_TAIL_SHOCKED,
+            },
+            "happy": {
+                "head": CHAR_HEAD_FRONT_NEUTRAL,
+                "body": CHAR_BODY_FRONT_SITTING,
+                "eyes": CHAR_EYES_FRONT_HAPPY,
+                "tail": CHAR_TAIL_NEUTRAL,
+            },
+            "aloof": {
+                "head": CHAR_HEAD_FRONT_NEUTRAL,
+                "body": CHAR_BODY_FRONT_SITTING,
+                "eyes": CHAR_EYES_FRONT_ALOOF,
+                "tail": CHAR_TAIL_NEUTRAL,
+            },
+            "content": {
+                "head": CHAR_HEAD_FRONT_NEUTRAL,
+                "body": CHAR_BODY_FRONT_SITTING,
+                "eyes": CHAR_EYES_FRONT_NEUTRAL,
+                "tail": CHAR_TAIL_NEUTRAL,
             },
         },
     },
