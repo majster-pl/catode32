@@ -281,7 +281,7 @@ class SceneManager:
         items = [
             SettingItem(
                 "Time", "time_of_day",
-                options=["Dawn", "Morning", "Noon", "Afternoon", "Evening", "Dusk", "Night"],
+                options=["Dawn", "Morning", "Noon", "Afternoon", "Dusk", "Evening", "Night"],
                 value=env.get('time_of_day', "Noon")
             ),
             SettingItem(

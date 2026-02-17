@@ -86,7 +86,14 @@ TWINKLE_RATIO = 0.2
 
 # Star field dimensions (larger than screen for scrolling)
 STAR_FIELD_WIDTH = 256
-STAR_FIELD_HEIGHT = 40
+STAR_FIELD_HEIGHT = 50  # ~4/5 of screen height
+
+
+# Twinkle cycle: longer cycle with pauses between twinkles
+# Phases 0-7 are "off", phases 8-9 are small twinkle, phase 10 is large twinkle
+TWINKLE_CYCLE_LENGTH = 12
+TWINKLE_SMALL_PHASES = (8, 9, 11)  # Growing and shrinking
+TWINKLE_LARGE_PHASE = 10          # Peak twinkle
 
 
 def _generate_stars():
@@ -94,7 +101,7 @@ def _generate_stars():
     Generate deterministic star positions using xorshift PRNG.
 
     Returns:
-        List of star dicts: {"x": int, "y": int, "twinkle": bool}
+        List of star dicts: {"x": int, "y": int, "twinkle": bool, "phase_offset": int}
     """
     stars = []
     state = STAR_SEED
@@ -105,33 +112,81 @@ def _generate_stars():
         y = state % STAR_FIELD_HEIGHT
         state = _xorshift32(state)
         twinkle = (state % 100) < int(TWINKLE_RATIO * 100)
-        stars.append({"x": x, "y": y, "twinkle": twinkle})
+        state = _xorshift32(state)
+        phase_offset = state % TWINKLE_CYCLE_LENGTH  # Each star starts at different phase
+        stars.append({"x": x, "y": y, "twinkle": twinkle, "phase_offset": phase_offset})
     return stars
 
 
 class ShootingStarEvent:
-    """Manages a shooting star animation"""
+    """Manages a shooting star animation with grow/shrink and trailing particles"""
 
     def __init__(self, start_x, start_y):
         self.x = start_x
         self.y = start_y
-        self.length = 8
-        self.speed_x = 60
-        self.speed_y = 20
+        self.max_length = 22
+        self.speed_x = 28
+        self.speed_y = 7
         self.lifetime = 0.0
-        self.max_lifetime = 0.5
+        self.max_lifetime = 3.1
         self.active = True
 
+        # Timing for grow/shrink
+        self.grow_duration = 0.5
+        self.shrink_start = self.max_lifetime - 0.7
+
+        # Trailing particles
+        self.particles = []
+        self.particle_timer = 0.0
+
+    @property
+    def length(self):
+        """Dynamic length - grows at start, shrinks at end"""
+        if self.lifetime < self.grow_duration:
+            # Growing phase
+            return self.max_length * (self.lifetime / self.grow_duration)
+        elif self.lifetime > self.shrink_start:
+            # Shrinking phase
+            remaining = self.max_lifetime - self.lifetime
+            shrink_duration = self.max_lifetime - self.shrink_start
+            return self.max_length * (remaining / shrink_duration)
+        else:
+            return self.max_length
+
     def update(self, dt):
+        # Move the head
         self.x += self.speed_x * dt
         self.y += self.speed_y * dt
         self.lifetime += dt
+
+        # Spawn particles from the tail periodically
+        self.particle_timer += dt
+        if self.particle_timer > 0.12 and self.lifetime > self.grow_duration:
+            self.particle_timer = 0
+            tail_x, tail_y, _, _ = self.get_points()
+            self.particles.append({
+                "x": float(tail_x),
+                "y": float(tail_y),
+                "life": 0.0,
+            })
+
+        # Update particles - they slow down and fall
+        for p in self.particles:
+            p["x"] += self.speed_x * 0.15 * dt  # Much slower horizontal
+            p["y"] += self.speed_y * 0.1 * dt  # Falls downward
+            p["life"] += dt
+
+        # Remove old particles
+        self.particles = [p for p in self.particles if p["life"] < 0.7]
+
         if self.lifetime >= self.max_lifetime:
             self.active = False
 
     def get_points(self):
-        trail_x = self.x - (self.length * self.speed_x / 60)
-        trail_y = self.y - (self.length * self.speed_y / 60)
+        """Get line segment for the main streak"""
+        current_length = self.length
+        trail_x = self.x - (current_length * self.speed_x / self.max_length)
+        trail_y = self.y - (current_length * self.speed_y / self.max_length)
         return (int(trail_x), int(trail_y), int(self.x), int(self.y))
 
 
@@ -351,7 +406,7 @@ class SkyRenderer:
         self.twinkle_timer += dt
         if self.twinkle_timer > 0.3:
             self.twinkle_timer = 0
-            self.twinkle_phase = (self.twinkle_phase + 1) % 4
+            self.twinkle_phase = (self.twinkle_phase + 1) % TWINKLE_CYCLE_LENGTH
 
         # Celestial body animation (sun rays)
         if self.celestial_sprite == SUN:
@@ -423,24 +478,36 @@ class SkyRenderer:
             if screen_y < 0 or screen_y >= STAR_FIELD_HEIGHT:
                 continue
 
-            # Draw star with twinkle effect
-            if star["twinkle"] and self.twinkle_phase in (1, 2):
-                renderer.draw_pixel(screen_x, screen_y)
-                if self.twinkle_phase == 2:
+            # Draw star with twinkle effect (each star has its own phase offset)
+            if star["twinkle"]:
+                star_phase = (self.twinkle_phase + star["phase_offset"]) % TWINKLE_CYCLE_LENGTH
+                if star_phase == TWINKLE_LARGE_PHASE:
                     # Large twinkle - cross shape
+                    renderer.draw_pixel(screen_x, screen_y)
                     renderer.draw_pixel(screen_x - 1, screen_y)
                     renderer.draw_pixel(screen_x + 1, screen_y)
                     renderer.draw_pixel(screen_x, screen_y - 1)
                     renderer.draw_pixel(screen_x, screen_y + 1)
-                else:
+                elif star_phase in TWINKLE_SMALL_PHASES:
                     # Small twinkle - horizontal only
+                    renderer.draw_pixel(screen_x, screen_y)
                     renderer.draw_pixel(screen_x - 1, screen_y)
                     renderer.draw_pixel(screen_x + 1, screen_y)
+                else:
+                    # Normal single pixel
+                    renderer.draw_pixel(screen_x, screen_y)
             else:
                 renderer.draw_pixel(screen_x, screen_y)
 
         # Draw shooting star if active
         if self.shooting_star and self.shooting_star.active:
+            # Draw trailing particles first (behind the main streak)
+            for p in self.shooting_star.particles:
+                px, py = int(p["x"]), int(p["y"])
+                if 0 <= px < config.DISPLAY_WIDTH and 0 <= py < 50:
+                    renderer.draw_pixel(px, py)
+
+            # Draw main streak
             x1, y1, x2, y2 = self.shooting_star.get_points()
             if 0 <= x2 < config.DISPLAY_WIDTH and 0 <= y2 < STAR_FIELD_HEIGHT + 10:
                 renderer.draw_line(x1, y1, x2, y2)
