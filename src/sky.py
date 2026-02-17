@@ -3,7 +3,7 @@
 import math
 import random
 import config
-from assets.nature import SUN, MOON, CLOUD1, CLOUD2
+from assets.nature import SUN, MOON, CLOUD1, CLOUD2, HOT_AIR_BALLOON, PLANE_TINY
 
 
 def _xorshift32(x):
@@ -191,6 +191,48 @@ class ShootingStarEvent:
         return (int(trail_x), int(trail_y), int(self.x), int(self.y))
 
 
+# Daytime sky event types
+SKY_EVENT_TYPES = [
+    {"sprite": HOT_AIR_BALLOON, "speed": 8, "mirror_when_right": False},
+    {"sprite": PLANE_TINY, "speed": 25, "mirror_when_right": True},
+]
+
+
+class SkyEvent:
+    """A daytime sky object (balloon, plane, etc.) crossing the screen"""
+
+    def __init__(self, event_type, start_x, y, going_right, world_width):
+        self.sprite = event_type["sprite"]
+        self.base_speed = event_type["speed"]
+        self.mirror_when_right = event_type["mirror_when_right"]
+
+        self.x = float(start_x)
+        self.y = y
+        self.going_right = going_right
+        self.world_width = world_width
+        self.active = True
+
+        # Speed with slight variance
+        self.speed = self.base_speed * (0.8 + random.random() * 0.4)
+
+    @property
+    def mirror(self):
+        """Whether to mirror the sprite when drawing"""
+        return self.mirror_when_right and self.going_right
+
+    def update(self, dt):
+        if self.going_right:
+            self.x += self.speed * dt
+            # Deactivate when fully off right side
+            if self.x > self.world_width + self.sprite["width"] + 20:
+                self.active = False
+        else:
+            self.x -= self.speed * dt
+            # Deactivate when fully off left side
+            if self.x < -self.sprite["width"] - 20:
+                self.active = False
+
+
 # Precipitation constants
 RAIN_PARTICLE_COUNT = 40
 SNOW_PARTICLE_COUNT = 30
@@ -245,6 +287,7 @@ class SkyRenderer:
         self.celestial_anim_timer = 0.0
         self.celestial_anim_frame = 0
         self.shooting_star = None
+        self.sky_event = None  # Daytime events (balloon, plane, etc.)
 
         # Managed objects (added to environment layer)
         self._celestial_obj = None
@@ -485,6 +528,16 @@ class SkyRenderer:
         if self.show_stars and not self.shooting_star:
             self._maybe_spawn_shooting_star()
 
+        # Daytime sky events (balloon, plane, etc.)
+        if self.sky_event:
+            self.sky_event.update(dt)
+            if not self.sky_event.active:
+                self.sky_event = None
+
+        # Maybe spawn new daytime sky event
+        if self.time_of_day in DAYTIME_TIMES and not self.sky_event:
+            self._maybe_spawn_sky_event()
+
         # Update cloud positions
         wrap_point = self.world_width + 65
         for cloud_data in self._cloud_objs:
@@ -547,6 +600,26 @@ class SkyRenderer:
             start_x = random.randint(10, 70)
             start_y = random.randint(2, 22)
             self.shooting_star = ShootingStarEvent(start_x, start_y)
+
+    def _maybe_spawn_sky_event(self):
+        """Check if a daytime sky event should spawn (rare)"""
+        if random.random() < 0.001:  # ~0.1% chance per frame
+            # Pick random event type
+            event_type = random.choice(SKY_EVENT_TYPES)
+
+            # Random direction
+            going_right = random.random() < 0.5
+
+            # Start position - off screen on the appropriate side
+            if going_right:
+                start_x = -event_type["sprite"]["width"] - 10
+            else:
+                start_x = self.world_width + 10
+
+            # Random height in upper portion of sky
+            y = random.randint(5, 35)
+
+            self.sky_event = SkyEvent(event_type, start_x, y, going_right, self.world_width)
 
     def get_star_offset(self):
         """Get combined star offset for time-of-night and seasonal drift"""
@@ -613,6 +686,20 @@ class SkyRenderer:
             x1, y1, x2, y2 = self.shooting_star.get_points()
             if 0 <= x2 < config.DISPLAY_WIDTH and 0 <= y2 < STAR_FIELD_HEIGHT + 10:
                 renderer.draw_line(x1, y1, x2, y2)
+
+        # Draw daytime sky event if active
+        if self.sky_event and self.sky_event.active:
+            event = self.sky_event
+            screen_x = int(event.x - camera_offset)
+            # Only draw if on screen
+            if -event.sprite["width"] < screen_x < config.DISPLAY_WIDTH + event.sprite["width"]:
+                renderer.draw_sprite_obj(
+                    event.sprite,
+                    screen_x,
+                    event.y,
+                    frame=0,
+                    mirror_h=event.mirror
+                )
 
     def make_precipitation_drawer(self, parallax, layer_index):
         """
