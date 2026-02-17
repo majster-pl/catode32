@@ -1,6 +1,6 @@
 import config
 from scene import Scene
-from environment import Environment, LAYER_BACKGROUND, LAYER_FOREGROUND
+from environment import Environment, LAYER_BACKGROUND, LAYER_MIDGROUND, LAYER_FOREGROUND
 from entities.character import CharacterEntity
 from entities.butterfly import ButterflyEntity
 from menu import Menu, MenuItem
@@ -93,6 +93,10 @@ class OutsideScene(Scene):
         env_settings = getattr(self.context, 'environment', {})
         self.sky.configure(env_settings, world_width=self.environment.world_width)
         self.sky.add_to_environment(self.environment, LAYER_BACKGROUND)
+
+        # Add precipitation to all layers for depth effect (each layer has its own particles)
+        self.environment.add_custom_draw(LAYER_MIDGROUND, self.sky.make_precipitation_drawer(0.6, 1))
+        self.environment.add_custom_draw(LAYER_FOREGROUND, self.sky.make_precipitation_drawer(1.0, 2))
 
     def exit(self):
         # Remove sky objects when leaving scene

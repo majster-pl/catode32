@@ -1,5 +1,6 @@
 # sky.py - Sky state and rendering logic for outdoor environments
 
+import math
 import random
 import config
 from assets.nature import SUN, MOON, CLOUD1, CLOUD2
@@ -49,10 +50,10 @@ WEATHER_CLOUD_CONFIG = {
     "Clear": (1, 2, 1.0),
     "Cloudy": (3, 5, 1.0),
     "Overcast": (5, 7, 0.8),
-    "Rain": (4, 6, 1.2),
-    "Storm": (5, 7, 1.5),
-    "Snow": (4, 6, 0.6),
-    "Windy": (3, 4, 2.5),
+    "Rain": (5, 8, 1.0),
+    "Storm": (8, 11, 1.3),
+    "Snow": (5, 8, 0.6),
+    "Windy": (3, 4, 1.5),
 }
 
 # Weather to precipitation type
@@ -60,7 +61,7 @@ WEATHER_PRECIPITATION = {
     "Clear": None,
     "Cloudy": None,
     "Overcast": None,
-    "Rain": ("rain", 0.6),
+    "Rain": ("rain", 0.3),
     "Storm": ("rain", 1.0),
     "Snow": ("snow", 0.7),
     "Windy": None,
@@ -190,6 +191,16 @@ class ShootingStarEvent:
         return (int(trail_x), int(trail_y), int(self.x), int(self.y))
 
 
+# Precipitation constants
+RAIN_PARTICLE_COUNT = 40
+SNOW_PARTICLE_COUNT = 30
+RAIN_SPEED_Y = 100  # Pixels per second
+RAIN_SPEED_X = 10   # Slight wind drift
+RAIN_STREAK_LENGTH = 3
+SNOW_SPEED_Y = 15
+SNOW_DRIFT_SPEED = 8  # Horizontal wobble amplitude
+
+
 class SkyRenderer:
     """
     Manages sky rendering including celestial bodies, stars, clouds, and animations.
@@ -245,6 +256,9 @@ class SkyRenderer:
         # Stars (generated once)
         self.stars = _generate_stars()
 
+        # Precipitation particles
+        self._precip_particles = []
+
     def configure(self, environment_settings, world_width=256, day_of_year=0):
         """
         Configure sky from environment settings dict.
@@ -265,6 +279,7 @@ class SkyRenderer:
         self._update_star_visibility()
         self._update_cloud_config()
         self._update_precipitation()
+        self._init_precipitation_particles()
 
     def _update_celestial_body(self):
         """Update celestial body sprite, frame, and position"""
@@ -315,6 +330,46 @@ class SkyRenderer:
         else:
             self.precipitation_type = None
             self.precipitation_intensity = 0.0
+
+    def _init_precipitation_particles(self):
+        """Initialize precipitation particles based on type and intensity"""
+        self._precip_particles = []
+
+        if not self.precipitation_type:
+            return
+
+        # Create particles for each layer (0=background, 1=midground, 2=foreground)
+        if self.precipitation_type == "rain":
+            count_per_layer = int(RAIN_PARTICLE_COUNT * self.precipitation_intensity)
+            for layer in range(3):
+                for _ in range(count_per_layer):
+                    self._precip_particles.append(self._spawn_rain_particle(random_y=True, layer=layer))
+        elif self.precipitation_type == "snow":
+            count_per_layer = int(SNOW_PARTICLE_COUNT * self.precipitation_intensity)
+            for layer in range(3):
+                for _ in range(count_per_layer):
+                    self._precip_particles.append(self._spawn_snow_particle(random_y=True, layer=layer))
+
+    def _spawn_rain_particle(self, random_y=False, layer=None):
+        """Spawn a rain particle at top of screen (or random y for init)"""
+        return {
+            "x": random.random() * self.world_width,
+            "y": random.random() * config.DISPLAY_HEIGHT if random_y else -random.randint(0, 15),
+            "speed_variance": 0.7 + random.random() * 0.6,  # 0.7-1.3x speed
+            "x_variance": 0.8 + random.random() * 0.4,  # Vary horizontal drift too
+            "layer": layer if layer is not None else random.randint(0, 2),
+        }
+
+    def _spawn_snow_particle(self, random_y=False, layer=None):
+        """Spawn a snow particle at top of screen (or random y for init)"""
+        return {
+            "x": random.random() * self.world_width,
+            "y": random.random() * config.DISPLAY_HEIGHT if random_y else -random.randint(0, 15),
+            "drift_offset": random.random() * 6.28,  # Random phase for sine drift
+            "drift_speed": 1.5 + random.random() * 2.0,  # Vary drift frequency
+            "speed_variance": 0.6 + random.random() * 0.8,  # 0.6-1.4x speed
+            "layer": layer if layer is not None else random.randint(0, 2),
+        }
 
     def _get_moon_sprite(self):
         """Get moon sprite with fill_frames expanded for all phases"""
@@ -439,6 +494,53 @@ class SkyRenderer:
             if obj["x"] > wrap_point:
                 obj["x"] = -65
 
+        # Update precipitation particles
+        self._update_precipitation_particles(dt)
+
+    def _update_precipitation_particles(self, dt):
+        """Update precipitation particle positions"""
+        if not self._precip_particles:
+            return
+
+        screen_bottom = config.DISPLAY_HEIGHT + 5
+
+        for p in self._precip_particles:
+            if self.precipitation_type == "rain":
+                # Rain falls fast with slight horizontal drift (varied per particle)
+                p["y"] += RAIN_SPEED_Y * p["speed_variance"] * dt
+                p["x"] += RAIN_SPEED_X * p["x_variance"] * dt
+
+                # Respawn at top when off bottom
+                if p["y"] > screen_bottom:
+                    p["y"] = -random.randint(0, 15)
+                    p["x"] = random.random() * self.world_width
+                    p["speed_variance"] = 0.7 + random.random() * 0.6
+                    p["x_variance"] = 0.8 + random.random() * 0.4
+
+                # Wrap horizontally
+                if p["x"] > self.world_width:
+                    p["x"] -= self.world_width
+
+            elif self.precipitation_type == "snow":
+                # Snow falls slowly with sinusoidal drift (varied frequency per particle)
+                p["y"] += SNOW_SPEED_Y * p["speed_variance"] * dt
+                drift = math.sin(self.elapsed_time * p["drift_speed"] + p["drift_offset"]) * SNOW_DRIFT_SPEED * dt
+                p["x"] += drift
+
+                # Respawn at top when off bottom
+                if p["y"] > screen_bottom:
+                    p["y"] = -random.randint(0, 15)
+                    p["x"] = random.random() * self.world_width
+                    p["drift_offset"] = random.random() * 6.28
+                    p["drift_speed"] = 1.5 + random.random() * 2.0
+                    p["speed_variance"] = 0.6 + random.random() * 0.8
+
+                # Wrap horizontally
+                if p["x"] < 0:
+                    p["x"] += self.world_width
+                elif p["x"] > self.world_width:
+                    p["x"] -= self.world_width
+
     def _maybe_spawn_shooting_star(self):
         """Check if a shooting star should spawn (very rare)"""
         if random.random() < 0.002:  # ~0.2% chance per frame
@@ -511,3 +613,55 @@ class SkyRenderer:
             x1, y1, x2, y2 = self.shooting_star.get_points()
             if 0 <= x2 < config.DISPLAY_WIDTH and 0 <= y2 < STAR_FIELD_HEIGHT + 10:
                 renderer.draw_line(x1, y1, x2, y2)
+
+    def make_precipitation_drawer(self, parallax, layer_index):
+        """
+        Create a precipitation draw function for a specific parallax layer.
+
+        Args:
+            parallax: Parallax factor for this layer (e.g., 0.3 for background, 1.0 for foreground)
+            layer_index: Which particle layer to draw (0=background, 1=midground, 2=foreground)
+
+        Returns:
+            A draw function compatible with environment.add_custom_draw()
+        """
+        def draw_func(renderer, camera_x, layer_parallax):
+            self._draw_precipitation(renderer, camera_x, parallax, layer_index)
+        return draw_func
+
+    def _draw_precipitation(self, renderer, camera_x, parallax, layer_index):
+        """Draw precipitation particles with parallax for a specific layer"""
+        if not self._precip_particles or not self.precipitation_type:
+            return
+
+        camera_offset = int(camera_x * parallax)
+
+        for p in self._precip_particles:
+            # Only draw particles assigned to this layer
+            if p["layer"] != layer_index:
+                continue
+
+            # Apply parallax to x position
+            screen_x = int(p["x"] - camera_offset)
+            screen_y = int(p["y"])
+
+            # Wrap for screen visibility
+            while screen_x < 0:
+                screen_x += config.DISPLAY_WIDTH
+            while screen_x >= config.DISPLAY_WIDTH:
+                screen_x -= config.DISPLAY_WIDTH
+
+            # Skip if off screen vertically
+            if screen_y < -RAIN_STREAK_LENGTH or screen_y > config.DISPLAY_HEIGHT:
+                continue
+
+            if self.precipitation_type == "rain":
+                # Draw rain as a short vertical line (streak)
+                streak_end_y = screen_y - RAIN_STREAK_LENGTH
+                # Slight angle matching the drift
+                streak_end_x = screen_x - 1
+                renderer.draw_line(streak_end_x, streak_end_y, screen_x, screen_y)
+            elif self.precipitation_type == "snow":
+                # Draw snow as a single pixel
+                if 0 <= screen_y < config.DISPLAY_HEIGHT:
+                    renderer.draw_pixel(screen_x, screen_y)
