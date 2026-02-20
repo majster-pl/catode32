@@ -61,8 +61,8 @@ class OutsideScene(Scene):
             x=179, y=63 - PLANTER1["height"] - PLANT1["height"]
         )
 
-        # Create character and butterflies
-        self.character = CharacterEntity(64, 62)
+        # Create character with context for behavior management
+        self.character = CharacterEntity(64, 62, context=self.context)
         butterfly1 = ButterflyEntity(110, 20)
         butterfly2 = ButterflyEntity(50, 30)
         butterfly2.anim_speed = 10

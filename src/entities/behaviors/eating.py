@@ -12,6 +12,8 @@ class EatingBehavior:
     5. Complete - Return to original pose
     """
 
+    NAME = "eating"
+
     # Poses used during the eating sequence
     POSES = {
         "standing.side.happy",
@@ -46,6 +48,31 @@ class EatingBehavior:
     def active(self):
         """Return True if currently in an eating sequence."""
         return self._active
+
+    @property
+    def progress(self):
+        """Return eating progress from 0.0 to 1.0."""
+        if not self._active or not self._bowl_sprite:
+            return 0.0
+        num_frames = len(self._bowl_sprite["frames"])
+        return min(1.0, self._bowl_frame / num_frames)
+
+    @property
+    def phase(self):
+        """Return the current phase name."""
+        return self._phase
+
+    def mark_triggered(self, current_time):
+        """Mark this behavior as triggered (for manager compatibility)."""
+        pass  # Eating doesn't use cooldown tracking
+
+    def apply_stat_effects(self, context, dt):
+        """Apply per-frame stat changes (for manager compatibility).
+
+        Eating doesn't apply gradual stat effects - stats are applied
+        on completion via the scene's callback.
+        """
+        pass
 
     def start(self, bowl_sprite, on_complete=None):
         """Begin the eating animation sequence.

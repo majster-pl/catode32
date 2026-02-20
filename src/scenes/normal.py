@@ -74,8 +74,8 @@ class NormalScene(Scene):
             x=141, y=63 - PLANTER1["height"] - PLANT3["height"]
         )
 
-        # Create character
-        self.character = CharacterEntity(100, 63)
+        # Create character with context for behavior management
+        self.character = CharacterEntity(100, 63, context=self.context)
         self.character.set_pose("sitting.forward.neutral")
 
         self.menu = Menu(self.renderer, self.input)

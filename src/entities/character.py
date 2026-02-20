@@ -1,5 +1,5 @@
 from entities.entity import Entity
-from entities.behaviors.eating import EatingBehavior
+from entities.behaviors.manager import BehaviorManager
 from assets.character import POSES
 
 
@@ -33,7 +33,7 @@ def get_all_pose_names():
 class CharacterEntity(Entity):
     """The main pet character entity."""
 
-    def __init__(self, x, y, pose="sitting.side.neutral"):
+    def __init__(self, x, y, pose="sitting.side.neutral", context=None):
         super().__init__(x, y)
         self.pose_name = pose
         self._pose = get_pose(pose)
@@ -43,14 +43,17 @@ class CharacterEntity(Entity):
         self.anim_eyes = 0.0
         self.anim_tail = 0.0
 
-        # Behaviors
-        self.eating = EatingBehavior(self)
+        # Behavior manager creates and owns all behaviors
+        # It also sets them as attributes on this character (e.g., self.eating)
+        self.behavior_manager = None
+        if context:
+            self.behavior_manager = BehaviorManager(self, context)
 
     def set_pose(self, pose_name):
         """Change the character's pose using dot notation (e.g., 'sitting.side.neutral')."""
-        # If eating and pose is changing to something outside the eating sequence, cancel
-        if self.eating.active and pose_name not in EatingBehavior.POSES:
-            self.eating.stop(completed=False)
+        # Check all behaviors for interruption if pose is outside their allowed set
+        if self.behavior_manager:
+            self.behavior_manager.interrupt_for_pose(pose_name)
 
         pose = get_pose(pose_name)
         if pose is not None:
@@ -96,8 +99,9 @@ class CharacterEntity(Entity):
         self.anim_eyes = (self.anim_eyes + dt * pose["eyes"].get("speed", 1)) % self._get_total_frames(pose["eyes"])
         self.anim_tail = (self.anim_tail + dt * pose["tail"].get("speed", 1)) % self._get_total_frames(pose["tail"])
 
-        # Update behaviors
-        self.eating.update(dt)
+        # Update behaviors via manager (handles all behaviors)
+        if self.behavior_manager:
+            self.behavior_manager.update(dt)
 
     def draw(self, renderer, mirror=False, camera_offset=0):
         """Draw the character at its position.

@@ -59,6 +59,7 @@ class SceneManager:
             'debug_context': ('scenes.debug_context', 'DebugContextScene'),
             'debug_memory': ('scenes.debug_memory', 'DebugMemoryScene'),
             'debug_poses': ('scenes.debug_poses', 'DebugPosesScene'),
+            'debug_behaviors': ('scenes.debug_behaviors', 'DebugBehaviorsScene'),
         }
 
     def _get_scene_class(self, name):
@@ -273,6 +274,8 @@ class SceneManager:
             debug_items.append(MenuItem("Memory", icon=WRENCH_ICON, action=('scene', 'debug_memory')))
         if 'debug_poses' in self._scene_registry:
             debug_items.append(MenuItem("Poses", icon=WRENCH_ICON, action=('scene', 'debug_poses')))
+        if 'debug_behaviors' in self._scene_registry:
+            debug_items.append(MenuItem("Behaviors", icon=WRENCH_ICON, action=('scene', 'debug_behaviors')))
         if debug_items:
             items.append(MenuItem("Debug", icon=WRENCH_ICON, submenu=debug_items))
 

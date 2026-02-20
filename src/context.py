@@ -27,3 +27,6 @@ class GameContext:
 
         # For storing time/weather/season/moon-phase type data
         self.environment = {}
+
+        # Behavior override - set to behavior name to force that behavior next
+        self.override_next_behavior = None
