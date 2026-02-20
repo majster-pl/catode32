@@ -94,11 +94,13 @@ class NormalScene(Scene):
         self.character.update(dt)
 
         # Sync food bowl with character's eating progress
-        if self.food_bowl_obj and self.character.is_eating:
-            bowl_x, bowl_y = self.character.get_bowl_position(mirror=False)
+        if self.food_bowl_obj and self.character.eating.active:
+            bowl_x, bowl_y = self.character.eating.get_bowl_position(
+                self.character.x, self.character.y, mirror=False
+            )
             self.food_bowl_obj["x"] = bowl_x
             self.food_bowl_obj["y"] = bowl_y
-            self.food_bowl_obj["frame"] = self.character.get_bowl_frame()
+            self.food_bowl_obj["frame"] = self.character.eating.get_bowl_frame()
 
         # Update fish rotation
         self.fish_angle = (self.fish_angle + (dt * 25)) % 360
@@ -211,10 +213,12 @@ class NormalScene(Scene):
         self._current_meal = meal_type
 
         # Start eating first so bowl sprite is set
-        self.character.start_eating(FOOD_BOWL, on_complete=self._on_eating_complete)
+        self.character.eating.start(FOOD_BOWL, on_complete=self._on_eating_complete)
 
         # Add food bowl to environment at character's calculated position
-        bowl_x, bowl_y = self.character.get_bowl_position(mirror=False)
+        bowl_x, bowl_y = self.character.eating.get_bowl_position(
+            self.character.x, self.character.y, mirror=False
+        )
         self.food_bowl_obj = {
             "sprite": FOOD_BOWL,
             "x": bowl_x,
