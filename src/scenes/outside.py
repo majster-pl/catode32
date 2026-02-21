@@ -135,10 +135,18 @@ class OutsideScene(Scene):
                 self._handle_menu_action(result)
             return None
 
-        if self.input.was_long_pressed('b'):
-            self.menu_active = True
-            self.menu.open(self._build_menu_items())
-            return None
+        # Check MENU1 button press/release for both menus
+        hold_time = self.input.was_released_after_hold('menu1')
+        if hold_time >= 0:
+            # Button was released, check hold duration
+            if hold_time >= self.input.hold_time_ms:
+                # Long press - open big menu
+                return ('open_big_menu',)
+            else:
+                # Short press - open context menu
+                self.menu_active = True
+                self.menu.open(self._build_menu_items())
+                return None
 
         dx, dy = self.input.get_direction()
         if dx != 0:

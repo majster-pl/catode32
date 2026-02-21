@@ -114,6 +114,36 @@ class InputHandler:
         
         return False
     
+    def was_released_after_hold(self, button_name):
+        """
+        Check if a button was just released and return the hold duration
+        Returns the hold time in ms if button was just released, or -1 if not
+        This is useful for distinguishing short press from long press on release
+        """
+        if button_name not in self.buttons:
+            return -1
+        
+        current_time = time.ticks_ms()
+        is_currently_pressed = self.is_pressed(button_name)
+        was_previously_pressed = self.button_states[button_name]
+        
+        # Button just pressed (initialize state)
+        if is_currently_pressed and not was_previously_pressed:
+            time_since_last = time.ticks_diff(current_time, self.last_press_time[button_name])
+            if time_since_last > self.debounce_time_ms:
+                self.button_states[button_name] = True
+                self.last_press_time[button_name] = current_time
+                self.long_press_triggered[button_name] = False
+        
+        # Button released - return hold duration
+        elif not is_currently_pressed and was_previously_pressed:
+            hold_time = time.ticks_diff(current_time, self.last_press_time[button_name])
+            self.button_states[button_name] = False
+            self.long_press_triggered[button_name] = False
+            return hold_time
+        
+        return -1
+    
     def get_direction(self):
         """
         Get the current direction from D-pad buttons

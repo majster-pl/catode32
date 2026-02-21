@@ -210,15 +210,15 @@ class SceneManager:
         if self.overlays.handle_input():
             return
 
-        # Open big menu on menu1 button
-        if self.input.was_just_pressed('menu1'):
-            self._open_big_menu()
-            return
-
+        # Let scenes handle menu1 button (they check short press for context menu)
+        # Scenes will return 'open_big_menu' signal for long press
         if self.current_scene:
             result = self.current_scene.handle_input()
-            if result and result[0] == 'change_scene':
-                self._handle_scene_change(result[1])
+            if result:
+                if result[0] == 'change_scene':
+                    self._handle_scene_change(result[1])
+                elif result[0] == 'open_big_menu':
+                    self._open_big_menu()
 
     def _open_big_menu(self):
         """Open the big menu as an overlay."""
