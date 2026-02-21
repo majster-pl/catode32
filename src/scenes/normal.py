@@ -132,12 +132,7 @@ class NormalScene(Scene):
                     return ('open_big_menu',)
             return None
 
-        # Check for long press first (instant at 500ms threshold)
-        if self.input.was_long_pressed('menu1'):
-            # Long press reached - open big menu immediately
-            return ('open_big_menu',)
-
-        # Check MENU1 button release for short press
+        # Check MENU1 button release for short press FIRST (before was_long_pressed resets state)
         hold_time = self.input.was_released_after_hold('menu1')
         if hold_time >= 0:
             # Button was released before long press threshold
@@ -146,6 +141,12 @@ class NormalScene(Scene):
                 self.menu_active = True
                 self.menu.open(self._build_menu_items())
                 return None
+            # If hold_time >= threshold, long press already triggered, ignore release
+
+        # Check for long press (instant at 500ms threshold)
+        if self.input.was_long_pressed('menu1'):
+            # Long press reached - open big menu immediately
+            return ('open_big_menu',)
 
         # D-pad pans camera
         dx, dy = self.input.get_direction()
