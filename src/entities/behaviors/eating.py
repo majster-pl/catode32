@@ -1,7 +1,9 @@
 """Eating behavior for the character entity."""
 
+from entities.behaviors.base import BaseBehavior
 
-class EatingBehavior:
+
+class EatingBehavior(BaseBehavior):
     """Manages the eating animation sequence for a character.
 
     Phases:
@@ -21,6 +23,15 @@ class EatingBehavior:
         "leaning_forward.side.eating",
     }
 
+    # Eating cannot be auto-triggered - requires explicit bowl/meal
+    TRIGGER_STAT = None
+    PRIORITY = 10  # High priority when manually triggered
+    COOLDOWN = 0.0
+
+    # No per-frame stat effects - stats applied on completion
+    STAT_EFFECTS = {}
+    COMPLETION_BONUS = {}  # Handled specially via MEAL_STATS
+
     # Stat effects for each meal type
     MEAL_STATS = {
         "chicken": {"fullness": 30, "energy": 10},
@@ -34,28 +45,18 @@ class EatingBehavior:
         Args:
             character: The CharacterEntity this behavior belongs to.
         """
-        self._character = character
+        super().__init__(character)
 
-        # State
-        self._active = False
-        self._phase = None  # "lowering", "pre_eating", "eating", "post_eating"
-        self._phase_timer = 0.0
+        # Eating-specific state
         self._bowl_sprite = None
         self._bowl_frame = 0.0
         self._bowl_y_progress = 0.0  # 0 = start (above), 1 = ground level
-        self._pose_before = None
-        self._on_complete = None
         self._meal_type = None
 
         # Timing configuration
         self.eating_speed = 0.4  # Bowl frames per second during eating phase
         self.lower_duration = 0.5  # Time for bowl to lower
         self.pause_duration = 1.5  # Pre/post eating pause
-
-    @property
-    def active(self):
-        """Return True if currently in an eating sequence."""
-        return self._active
 
     @property
     def progress(self):
@@ -65,24 +66,11 @@ class EatingBehavior:
         num_frames = len(self._bowl_sprite["frames"])
         return min(1.0, self._bowl_frame / num_frames)
 
-    @property
-    def phase(self):
-        """Return the current phase name."""
-        return self._phase
+    def can_trigger(self, context, current_time):
+        """Eating cannot be auto-triggered - it requires explicit bowl/meal."""
+        return False
 
-    def mark_triggered(self, current_time):
-        """Mark this behavior as triggered (for manager compatibility)."""
-        pass  # Eating doesn't use cooldown tracking
-
-    def apply_stat_effects(self, context, dt):
-        """Apply per-frame stat changes (for manager compatibility).
-
-        Eating doesn't apply gradual stat effects - stats are applied
-        once on completion via _apply_meal_stats().
-        """
-        pass
-
-    def start(self, bowl_sprite, meal_type, on_complete=None):
+    def start(self, bowl_sprite=None, meal_type=None, on_complete=None):
         """Begin the eating animation sequence.
 
         Args:
@@ -96,6 +84,7 @@ class EatingBehavior:
         self._active = True
         self._phase = "lowering"
         self._phase_timer = 0.0
+        self._progress = 0.0
         self._bowl_sprite = bowl_sprite
         self._bowl_frame = 0.0
         self._bowl_y_progress = 0.0
@@ -132,9 +121,10 @@ class EatingBehavior:
         self._meal_type = None
 
         callback = self._on_complete
+        final_progress = self._progress
         self._on_complete = None
         if callback:
-            callback()
+            callback(completed, final_progress)
 
     def _apply_meal_stats(self):
         """Apply stat changes for the current meal type."""

@@ -213,7 +213,7 @@ class NormalScene(Scene):
         }
         self.environment.layers[LAYER_FOREGROUND].append(self.food_bowl_obj)
 
-    def _on_eating_complete(self):
+    def _on_eating_complete(self, completed, progress):
         """Called when eating finishes. Handles visual cleanup."""
         # Remove food bowl from environment
         if self.food_bowl_obj and self.food_bowl_obj in self.environment.layers[LAYER_FOREGROUND]:

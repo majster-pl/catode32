@@ -168,4 +168,5 @@ class BaseBehavior:
         Args:
             current_time: Current elapsed game time in seconds.
         """
+        print(f"Triggered behavior: {self.NAME}")
         self._last_trigger_time = current_time

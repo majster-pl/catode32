@@ -37,7 +37,7 @@ class BehaviorManager:
         self._create_behaviors()
 
         # Selection state
-        self._check_interval = 5.0  # Check for new behavior every 5 seconds
+        self._check_interval = 15.0  # Check for new behavior every 5 seconds
         self._time_since_check = 0.0
 
     def _create_behaviors(self):
@@ -157,7 +157,10 @@ class BehaviorManager:
             active.update(dt)
             if self._context:
                 active.apply_stat_effects(self._context, dt)
-            return
+            # Only return early for non-idle behaviors
+            # Idle should still allow automatic trigger checks
+            if active != self._idle_behavior:
+                return
 
         # No active behavior - check for override first
         if self._context:
@@ -184,7 +187,9 @@ class BehaviorManager:
         Returns:
             True if a behavior was triggered, False otherwise.
         """
+        print("Checking automatic trigger...")
         if not self._context:
+            print("No context?")
             return False
 
         eligible = []
@@ -197,6 +202,7 @@ class BehaviorManager:
                 eligible.append(behavior)
 
         if not eligible:
+            print("No eligible behavioral changes. Staying idle.")
             return False
 
         # Sort by priority (lower = higher priority)
