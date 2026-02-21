@@ -1,6 +1,20 @@
 """Playing behavior for energetic fun."""
 
 from entities.behaviors.base import BaseBehavior
+from ui import draw_bubble
+
+
+# Trigger configurations for toy/throw_stick
+TRIGGERS = {
+    "toy": {
+        "bubble": "exclaim",
+        "stats": {"playfulness": 15, "stimulation": 10},
+    },
+    "throw_stick": {
+        "bubble": "star",
+        "stats": {"playfulness": 15, "energy": -10},
+    },
+}
 
 
 class PlayingBehavior(BaseBehavior):
@@ -13,12 +27,6 @@ class PlayingBehavior(BaseBehavior):
     """
 
     NAME = "playing"
-    POSES = {
-        "sitting.side.happy",
-        "standing.side.happy",
-        "sitting_silly.side.happy",
-        "sitting.side.neutral",
-    }
 
     # Trigger when playfulness is high
     TRIGGER_STAT = "playfulness"
@@ -44,10 +52,16 @@ class PlayingBehavior(BaseBehavior):
         self.play_duration = 5.0
         self.tired_duration = 1.0
 
-    def start(self, on_complete=None):
+        # Trigger-specific state
+        self._trigger_type = None
+        self._bubble = None
+
+    def start(self, trigger=None, context=None, on_complete=None):
         """Begin playing.
 
         Args:
+            trigger: Optional trigger type ("toy" or "throw_stick") for instant stats/bubble.
+            context: GameContext to apply stats to (if trigger specified).
             on_complete: Optional callback when play finishes.
         """
         if self._active:
@@ -59,6 +73,21 @@ class PlayingBehavior(BaseBehavior):
         self._progress = 0.0
         self._pose_before = self._character.pose_name
         self._on_complete = on_complete
+
+        # Handle trigger-specific setup
+        self._trigger_type = trigger
+        if trigger and trigger in TRIGGERS:
+            config = TRIGGERS[trigger]
+            self._bubble = config["bubble"]
+
+            # Apply instant stats
+            if context:
+                for stat, delta in config.get("stats", {}).items():
+                    current = getattr(context, stat, 0)
+                    new_value = max(0, min(100, current + delta))
+                    setattr(context, stat, new_value)
+        else:
+            self._bubble = None
 
         self._character.set_pose("sitting.side.happy")
 
@@ -77,6 +106,7 @@ class PlayingBehavior(BaseBehavior):
             if self._phase_timer >= self.excited_duration:
                 self._phase = "playing"
                 self._phase_timer = 0.0
+                self._bubble = None  # Clear bubble after excited phase
                 self._character.set_pose("sitting_silly.side.happy")
 
         elif self._phase == "playing":
@@ -90,3 +120,16 @@ class PlayingBehavior(BaseBehavior):
         elif self._phase == "tired":
             if self._phase_timer >= self.tired_duration:
                 self.stop(completed=True)
+
+    def draw(self, renderer, char_x, char_y, mirror=False):
+        """Draw the speech bubble during excited phase.
+
+        Args:
+            renderer: The renderer to draw with.
+            char_x: Character's x position on screen.
+            char_y: Character's y position.
+            mirror: If True, character is facing right.
+        """
+        if self._active and self._bubble and self._phase == "excited":
+            progress = min(1.0, self._phase_timer / self.excited_duration)
+            draw_bubble(renderer, self._bubble, char_x, char_y, progress, mirror)

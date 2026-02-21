@@ -1,6 +1,23 @@
 """ui.py - Reusable UI components"""
 
 from assets.icons import UP_ICON, DOWN_ICON
+from assets.effects import (
+    SPEECH_BUBBLE,
+    BUBBLE_HEART,
+    BUBBLE_QUESTION,
+    BUBBLE_EXCLAIM,
+    BUBBLE_NOTE,
+    BUBBLE_STAR,
+)
+
+# Map bubble names to sprites
+BUBBLE_SPRITES = {
+    "heart": BUBBLE_HEART,
+    "question": BUBBLE_QUESTION,
+    "exclaim": BUBBLE_EXCLAIM,
+    "note": BUBBLE_NOTE,
+    "star": BUBBLE_STAR,
+}
 
 
 class OverlayManager:
@@ -330,3 +347,42 @@ class Popup:
             lines.append(current_line)
 
         return lines
+
+
+def draw_bubble(renderer, bubble_type, char_x, char_y, progress=0.0, mirror=False):
+    """Draw a speech bubble with content.
+
+    Args:
+        renderer: The renderer to draw with.
+        bubble_type: Type of bubble content ("heart", "question", "exclaim", "note", "star").
+        char_x: Character's x position on screen.
+        char_y: Character's y position.
+        progress: Animation progress 0.0-1.0 (affects vertical drift).
+        mirror: If True, position bubble on right side (outside scene).
+    """
+    if not bubble_type:
+        return
+
+    # Drift upward as progress increases
+    drift_amount = 10
+    bubble_y = int(char_y) - 45 - int(progress * drift_amount)
+
+    if mirror:
+        # Position bubble to the right of the character
+        bubble_x = char_x + 15
+    else:
+        # Position bubble to the left of the character
+        bubble_x = char_x - SPEECH_BUBBLE["width"] - 15
+
+    # Draw bubble frame (mirrored if needed so tail points correct direction)
+    renderer.draw_sprite_obj(SPEECH_BUBBLE, bubble_x, bubble_y, mirror_h=mirror)
+
+    # Draw content sprite centered inside bubble (inverted)
+    content_sprite = BUBBLE_SPRITES.get(bubble_type)
+    if content_sprite:
+        content_x = bubble_x + 4
+        content_y = bubble_y + 2
+        renderer.draw_sprite_obj(
+            content_sprite, content_x, content_y,
+            invert=True, transparent=True, transparent_color=1
+        )

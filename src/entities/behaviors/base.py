@@ -5,13 +5,12 @@ class BaseBehavior:
     """Abstract base class for all behaviors.
 
     Provides common interface and stat-affecting infrastructure.
-    Subclasses should override NAME, POSES, and implement their own
-    update() logic with phases.
+    Subclasses should override NAME and implement their own
+    update() and draw() logic with phases.
     """
 
     # Override in subclasses
     NAME = "base"
-    POSES = set()  # Set of pose names used by this behavior
 
     # Triggering configuration (override in subclasses)
     TRIGGER_STAT = None  # e.g., "energy"
@@ -136,6 +135,20 @@ class BaseBehavior:
         if not self._active:
             return
         self._phase_timer += dt
+
+    def draw(self, renderer, char_x, char_y, mirror=False):
+        """Draw behavior visual effects.
+
+        Override in subclasses to render bubbles, particles, etc.
+        Called by the character's draw method.
+
+        Args:
+            renderer: The renderer to draw with.
+            char_x: Character's x position on screen.
+            char_y: Character's y position.
+            mirror: If True, character is facing right (outside scene).
+        """
+        pass
 
     def apply_stat_effects(self, context, dt):
         """Apply per-frame stat changes during the behavior.

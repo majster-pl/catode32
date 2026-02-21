@@ -3,7 +3,6 @@ from scene import Scene
 from environment import Environment, LAYER_FOREGROUND
 from entities.character import CharacterEntity
 from menu import Menu, MenuItem
-from actions import ReactionManager, apply_action
 from assets.icons import TOYS_ICON, HEART_ICON, HEART_BUBBLE_ICON, HAND_ICON, KIBBLE_ICON, TOY_ICONS, SNACK_ICONS, FISH_ICON, CHICKEN_ICON, MEAL_ICON
 from assets.furniture import BOOKSHELF
 from assets.nature import PLANTER1, PLANT3
@@ -20,10 +19,6 @@ class NormalScene(Scene):
 
         # Reference to fish object for animation
         self.fish_obj = None
-
-        # Reaction state
-        self.default_pose = "sitting.forward.neutral"
-        self.reactions = ReactionManager()
 
         # Eating state
         self.food_bowl_obj = None
@@ -104,9 +99,6 @@ class NormalScene(Scene):
         self.fish_angle = (self.fish_angle + (dt * 25)) % 360
         self.fish_obj["rotate"] = self.fish_angle
 
-        # Update reactions
-        self.reactions.update(dt, self.character, self.default_pose)
-
     def draw(self):
         """Draw the scene"""
         if self.menu_active:
@@ -121,10 +113,6 @@ class NormalScene(Scene):
         # Draw character (with foreground parallax)
         camera_offset = int(self.environment.camera_x)
         self.character.draw(self.renderer, camera_offset=camera_offset)
-
-        # Draw reaction bubble if active
-        char_screen_x = int(self.character.x) - camera_offset
-        self.reactions.draw(self.renderer, char_screen_x, self.character.y)
 
     def handle_input(self):
         """Process input - can also return scene change instructions"""
@@ -186,11 +174,24 @@ class NormalScene(Scene):
 
     def _handle_menu_action(self, action):
         """Handle menu selection"""
-        if action:
-            if action[0] == "meal":
-                self._start_eating(action[1])
-            else:
-                apply_action(action[0], self.context, self.character, self.reactions)
+        if not action:
+            return
+
+        action_type = action[0]
+        manager = self.character.behavior_manager
+
+        if action_type == "meal":
+            self._start_eating(action[1])
+        elif action_type == "kiss":
+            manager.trigger("affection", variant="kiss", context=self.context)
+        elif action_type == "pets":
+            manager.trigger("affection", variant="pets", context=self.context)
+        elif action_type == "psst":
+            manager.trigger("attention", variant="psst", context=self.context)
+        elif action_type == "snack":
+            manager.trigger("snacking", variant="snack", context=self.context)
+        elif action_type == "toy":
+            manager.trigger("playing", trigger="toy", context=self.context)
 
     def _start_eating(self, meal_type):
         """Start the eating sequence.

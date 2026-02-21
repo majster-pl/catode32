@@ -13,10 +13,6 @@ class StretchingBehavior(BaseBehavior):
     """
 
     NAME = "stretching"
-    POSES = {
-        "standing.side.neutral",
-        "leaning_forward.side.stretch",
-    }
 
     # Trigger when comfort is low
     TRIGGER_STAT = "comfort"

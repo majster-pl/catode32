@@ -6,6 +6,9 @@ from entities.behaviors.sleeping import SleepingBehavior
 from entities.behaviors.investigating import InvestigatingBehavior
 from entities.behaviors.playing import PlayingBehavior
 from entities.behaviors.stretching import StretchingBehavior
+from entities.behaviors.affection import AffectionBehavior
+from entities.behaviors.attention import AttentionBehavior
+from entities.behaviors.snacking import SnackingBehavior
 
 
 class BehaviorManager:
@@ -51,6 +54,9 @@ class BehaviorManager:
         investigating = InvestigatingBehavior(character)
         playing = PlayingBehavior(character)
         stretching = StretchingBehavior(character)
+        affection = AffectionBehavior(character)
+        attention = AttentionBehavior(character)
+        snacking = SnackingBehavior(character)
 
         # Register them
         self._register(eating)
@@ -59,6 +65,9 @@ class BehaviorManager:
         self._register(investigating)
         self._register(playing)
         self._register(stretching)
+        self._register(affection)
+        self._register(attention)
+        self._register(snacking)
 
         # Expose on character for direct access (e.g., character.eating)
         character.eating = eating
@@ -67,6 +76,9 @@ class BehaviorManager:
         character.investigating = investigating
         character.playing = playing
         character.stretching = stretching
+        character.affection = affection
+        character.attention = attention
+        character.snacking = snacking
 
     def _register(self, behavior, is_idle=False):
         """Register a behavior with the manager.
@@ -104,16 +116,6 @@ class BehaviorManager:
             The behavior instance, or None if not found.
         """
         return self._behaviors.get(name)
-
-    def interrupt_for_pose(self, pose_name):
-        """Stop any active behavior that doesn't allow the given pose.
-
-        Args:
-            pose_name: The pose being set.
-        """
-        for behavior in self._behaviors.values():
-            if behavior.active and pose_name not in behavior.POSES:
-                behavior.stop(completed=False)
 
     def trigger(self, name, **kwargs):
         """Manually trigger a behavior by name.

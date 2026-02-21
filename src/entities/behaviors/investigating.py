@@ -13,11 +13,6 @@ class InvestigatingBehavior(BaseBehavior):
     """
 
     NAME = "investigating"
-    POSES = {
-        "standing.side.neutral",
-        "standing.side.neutral_looking_down",
-        "sitting.forward.aloof",
-    }
 
     # Trigger when curiosity is high
     TRIGGER_STAT = "curiosity"

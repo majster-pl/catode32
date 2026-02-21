@@ -4,7 +4,6 @@ from environment import Environment, LAYER_BACKGROUND, LAYER_MIDGROUND, LAYER_FO
 from entities.character import CharacterEntity
 from entities.butterfly import ButterflyEntity
 from menu import Menu, MenuItem
-from actions import ReactionManager, apply_action
 from assets.icons import TOYS_ICON, HAND_ICON, KIBBLE_ICON, TOY_ICONS
 from assets.nature import PLANT1, PLANTER1, PLANT2
 from sky import SkyRenderer
@@ -21,10 +20,6 @@ class OutsideScene(Scene):
 
         # Sky renderer handles celestial body, stars, clouds
         self.sky = SkyRenderer()
-
-        # Reaction state
-        self.default_pose = "sitting.side.neutral"
-        self.reactions = ReactionManager()
 
     def load(self):
         super().load()
@@ -108,9 +103,6 @@ class OutsideScene(Scene):
         # Update character
         self.character.update(dt)
 
-        # Update reactions
-        self.reactions.update(dt, self.character, self.default_pose)
-
         # Update environment entities (butterflies)
         self.environment.update(dt)
 
@@ -128,10 +120,6 @@ class OutsideScene(Scene):
         # Draw character separately (needs mirror control)
         camera_offset = int(self.environment.camera_x)
         self.character.draw(self.renderer, mirror=True, camera_offset=camera_offset)
-
-        # Draw reaction bubble if active
-        char_screen_x = int(self.character.x) - camera_offset
-        self.reactions.draw(self.renderer, char_screen_x, self.character.y, mirror=True)
 
         # Apply lightning inversion (hardware-level, affects display after show())
         self.renderer.invert(self.sky.get_lightning_invert_state())
@@ -179,5 +167,19 @@ class OutsideScene(Scene):
 
     def _handle_menu_action(self, action):
         """Handle menu selection"""
-        if action:
-            apply_action(action[0], self.context, self.character, self.reactions)
+        if not action:
+            return
+
+        action_type = action[0]
+        manager = self.character.behavior_manager
+
+        if action_type == "pets":
+            manager.trigger("affection", variant="pets", context=self.context)
+        elif action_type == "point_bird":
+            manager.trigger("attention", variant="point_bird", context=self.context)
+        elif action_type == "throw_stick":
+            manager.trigger("playing", trigger="throw_stick", context=self.context)
+        elif action_type == "treat":
+            manager.trigger("snacking", variant="treat", context=self.context)
+        elif action_type == "toy":
+            manager.trigger("playing", trigger="toy", context=self.context)

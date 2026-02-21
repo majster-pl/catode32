@@ -11,27 +11,25 @@ class DebugBehaviorsScene(Scene):
     LINES_VISIBLE = 6
     LINE_HEIGHT = 8
 
-    # List of behaviors that can be triggered
-    BEHAVIORS = [
-        ("idle", "Idle"),
-        ("sleeping", "Sleeping"),
-        ("investigating", "Investigating"),
-        ("playing", "Playing"),
-        ("stretching", "Stretching"),
-        ("eating", "Eating"),
-    ]
-
     def __init__(self, context, renderer, input):
         super().__init__(context, renderer, input)
         self.character = None
         self.selected_index = 0
         self.scrollbar = Scrollbar(renderer)
         self.scroll_offset = 0
+        self.behaviors = []  # Built dynamically from manager
 
     def load(self):
         super().load()
         # Create character with context for behavior management
         self.character = CharacterEntity(90, 60, context=self.context)
+
+        # Build behavior list from manager
+        if self.character.behavior_manager:
+            self.behaviors = [
+                (name, name[0].upper() + name[1:])
+                for name in sorted(self.character.behavior_manager._behaviors.keys())
+            ]
 
     def unload(self):
         super().unload()
@@ -70,10 +68,10 @@ class DebugBehaviorsScene(Scene):
     def _draw_behavior_list(self):
         """Draw the list of behaviors with selection indicator."""
         y = 0
-        visible_end = min(self.scroll_offset + self.LINES_VISIBLE, len(self.BEHAVIORS))
+        visible_end = min(self.scroll_offset + self.LINES_VISIBLE, len(self.behaviors))
 
         for i in range(self.scroll_offset, visible_end):
-            key, name = self.BEHAVIORS[i]
+            key, name = self.behaviors[i]
             line_y = y + (i - self.scroll_offset) * self.LINE_HEIGHT
 
             # Selection indicator
@@ -89,9 +87,9 @@ class DebugBehaviorsScene(Scene):
             self.renderer.draw_text(f"{prefix}{name}{suffix}", 0, line_y)
 
         # Scrollbar if needed (will appear on right edge of screen)
-        if len(self.BEHAVIORS) > self.LINES_VISIBLE:
+        if len(self.behaviors) > self.LINES_VISIBLE:
             self.scrollbar.draw(
-                len(self.BEHAVIORS),
+                len(self.behaviors),
                 self.LINES_VISIBLE,
                 self.scroll_offset
             )
@@ -124,7 +122,7 @@ class DebugBehaviorsScene(Scene):
                 self.scroll_offset = self.selected_index
 
         if self.input.was_just_pressed('down'):
-            self.selected_index = min(len(self.BEHAVIORS) - 1, self.selected_index + 1)
+            self.selected_index = min(len(self.behaviors) - 1, self.selected_index + 1)
             # Scroll to keep selection visible
             if self.selected_index >= self.scroll_offset + self.LINES_VISIBLE:
                 self.scroll_offset = self.selected_index - self.LINES_VISIBLE + 1
@@ -149,7 +147,7 @@ class DebugBehaviorsScene(Scene):
         if not self.character or not self.character.behavior_manager:
             return
 
-        behavior_key = self.BEHAVIORS[self.selected_index][0]
+        behavior_key = self.behaviors[self.selected_index][0]
 
         # Special handling for eating - it needs a bowl sprite
         if behavior_key == "eating":

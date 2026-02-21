@@ -14,13 +14,6 @@ class SleepingBehavior(BaseBehavior):
     """
 
     NAME = "sleeping"
-    POSES = {
-        "sitting.side.looking_down",  # Considering pose
-        "leaning_forward.side.neutral",  # Settling pose
-        "sleeping.side.sploot",
-        "sleeping.side.modest",
-        "sleeping.side.crossed",
-    }
 
     # Trigger when energy is low
     TRIGGER_STAT = "energy"

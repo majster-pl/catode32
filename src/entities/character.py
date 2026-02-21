@@ -51,10 +51,6 @@ class CharacterEntity(Entity):
 
     def set_pose(self, pose_name):
         """Change the character's pose using dot notation (e.g., 'sitting.side.neutral')."""
-        # Check all behaviors for interruption if pose is outside their allowed set
-        if self.behavior_manager:
-            self.behavior_manager.interrupt_for_pose(pose_name)
-
         pose = get_pose(pose_name)
         if pose is not None:
             self.pose_name = pose_name
@@ -154,3 +150,9 @@ class CharacterEntity(Entity):
             renderer.draw_sprite_obj(head, head_x, head_y, frame=head_frame, mirror_h=mirror)
 
         renderer.draw_sprite_obj(eyes, eye_x, eye_y, frame=eye_frame, mirror_h=mirror)
+
+        # Draw active behavior's visual effects (bubbles, etc.)
+        if self.behavior_manager:
+            active = self.behavior_manager.active_behavior
+            if active:
+                active.draw(renderer, x, y, mirror)

@@ -16,13 +16,6 @@ class EatingBehavior(BaseBehavior):
 
     NAME = "eating"
 
-    # Poses used during the eating sequence
-    POSES = {
-        "standing.side.happy",
-        "leaning_forward.side.neutral",
-        "leaning_forward.side.eating",
-    }
-
     # Eating cannot be auto-triggered - requires explicit bowl/meal
     TRIGGER_STAT = None
     PRIORITY = 10  # High priority when manually triggered
