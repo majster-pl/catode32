@@ -124,16 +124,24 @@ class NormalScene(Scene):
             elif result is not None:
                 self.menu_active = False
                 self._handle_menu_action(result)
+            else:
+                # Menu is open - check if user wants to switch to big menu
+                if self.input.was_just_pressed('menu1'):
+                    # Close context menu and open big menu
+                    self.menu_active = False
+                    return ('open_big_menu',)
             return None
 
-        # Check MENU1 button press/release for both menus
+        # Check for long press first (instant at 500ms threshold)
+        if self.input.was_long_pressed('menu1'):
+            # Long press reached - open big menu immediately
+            return ('open_big_menu',)
+
+        # Check MENU1 button release for short press
         hold_time = self.input.was_released_after_hold('menu1')
         if hold_time >= 0:
-            # Button was released, check hold duration
-            if hold_time >= self.input.hold_time_ms:
-                # Long press - open big menu
-                return ('open_big_menu',)
-            else:
+            # Button was released before long press threshold
+            if hold_time < self.input.hold_time_ms:
                 # Short press - open context menu
                 self.menu_active = True
                 self.menu.open(self._build_menu_items())
