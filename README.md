@@ -1,4 +1,4 @@
-# Virtual Pet
+# Virtual Pet (fork!)
 
 ## This is a fork of catode32 which can be found here: https://github.com/moonbench/catode32
 
