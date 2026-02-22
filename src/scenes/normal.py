@@ -118,18 +118,19 @@ class NormalScene(Scene):
         """Process input - can also return scene change instructions"""
         # Handle menu input when active
         if self.menu_active:
+            # Check for menu button short press to switch to big menu (before menu consumes it)
+            hold_time = self.input.was_released_after_hold('menu1')
+            if hold_time >= 0 and hold_time < self.input.hold_time_ms:
+                # Short press - close context menu and open big menu
+                self.menu_active = False
+                return ('open_big_menu',)
+            
             result = self.menu.handle_input()
             if result == 'closed':
                 self.menu_active = False
             elif result is not None:
                 self.menu_active = False
                 self._handle_menu_action(result)
-            else:
-                # Menu is open - check if user wants to switch to big menu
-                if self.input.was_just_pressed('menu1'):
-                    # Close context menu and open big menu
-                    self.menu_active = False
-                    return ('open_big_menu',)
             return None
 
         # Check MENU1 button release for short press FIRST (before was_long_pressed resets state)
