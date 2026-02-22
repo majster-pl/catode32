@@ -25,7 +25,7 @@ class InputHandler:
         self.button_states = {}
         self.last_press_time = {}
         self.debounce_time_ms = 50  # 50ms debounce
-        self.hold_time_ms = 500  # 500ms for long press detection
+        self.hold_time_ms = config.BUTTON_HOLD_TIME_MS  # Configurable long press detection
         
         # Track if long press has been triggered
         self.long_press_triggered = {}

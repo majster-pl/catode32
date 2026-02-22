@@ -64,6 +64,9 @@ BTN_A = _CONFIG['BTN_A']
 BTN_B = _CONFIG['BTN_B']
 BTN_MENU1 = _CONFIG['BTN_MENU1']
 
+# Button Behavior Settings
+BUTTON_HOLD_TIME_MS = 500  # Milliseconds to hold button for long press detection
+
 # Game Constants
 FPS = 12  # Target frames per second
 FRAME_TIME_MS = 1000 // FPS  # Milliseconds per frame
