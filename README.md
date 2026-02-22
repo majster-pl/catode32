@@ -200,7 +200,9 @@ Now `./dev.sh` should work again.
 
 - **D-pad** (UP/DOWN/LEFT/RIGHT): Navigate menus, move character, pan camera
 - **A button**: Select/confirm actions
-- **B button**: 
-  - Short press: Back/cancel in menus
-  - Long press (hold 0.5s): Open context menu for pet interactions
-- **MENU button**: Open main menu (scenes, stats, minigames, settings)
+- **B button**: Back/cancel in menus
+- **MENU button**: 
+  - Short press (< 0.5s): Open/switch to context menu for pet interactions
+  - Long press (≥ 0.5s): Open/switch to main menu (scenes, stats, minigames, settings)
+
+**Note:** The long press threshold (default 500ms) is configurable in `src/config.py` via `BUTTON_HOLD_TIME_MS`.
